@@ -1,27 +1,52 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Table } from '../../../components';
 import type { ActionColumn } from '../../../components';
+import { plantService } from '../../../services/plantService';
+import { Plant, Category } from '../../../types/Model';
+import {categoryService} from '../../../services/categoryService';
 
 interface PlantTable {
-  id: number;
-  name: string;
-  scientificName: string;
-  image: string;
-  overview: string;
-  characteristic: string;
-  function: string;
-  meaning: string;
-  difficulty_level: 'EASY' | 'MEDIUM' | 'HARD';
-  soil_type: 'CLAY' | 'SANDY' | 'SILTY' | 'PEATY' | 'CHALKY' | 'LOAMY';
-  category_id: string;
-  habitatLocation: 'INDOOR' | 'OUTDOOR' | 'BOTH';
-  minTemperature: number;
-  maxTemperature: number;
-  minMatureSize: number;
-  maxMatureSize: number;
-  humidityRange: 'LOW' | 'MEDIUM' | 'HIGH';
-  lightRequirement: 'LOW' | 'MEDIUM' | 'HIGH';
-  approved_content: boolean;
+  id: string; // UUID của cây trồng
+  created_at: string; // Thời gian tạo
+  plant_name: string; // Tên cây trồng
+  scientific_name: string; // Tên khoa học của cây trồng
+  image_url: string[]; // Danh sách URL hình ảnh
+  overview: string[]; // Mô tả tổng quan
+  characteristic: string[]; // Đặc điểm của cây
+  function: string[]; // Chức năng của cây
+  meaning: string[]; // Ý nghĩa của cây
+  difficulty_level: 'EASY' | 'MEDIUM' | 'HARD' | 'VERY_HARD' | 'EXTREME'; // Mức độ khó theo ENUM DIFFICULTY_LEVEL
+  soil_type: 'SANDY' | 'CLAY' | 'SILT' | 'PEAT' | 'CHALK' | 'LOAM'; // Loại đất theo ENUM SOIL_TYPE
+  category_id: string; // ID của danh mục
+  habitatLocation:
+    | 'INDOOR'
+    | 'OUTDOOR'
+    | 'BALCONY'
+    | 'GARDEN'
+    | 'GREENHOUSE'
+    | 'WINDOW_SILL'
+    | 'KITCHEN'
+    | 'BATHROOM'
+    | 'TERRACE'
+    | 'OFFICE'
+    | 'HYDROPONICS'
+    | 'WALL_PLANTER'; // Vị trí sinh trưởng theo ENUM PLANT_SITE
+    minTemperature: number; // Nhiệt độ tối thiểu
+    maxTemperature: number; // Nhiệt độ tối đa
+    minMatureSize: number; // Kích thước trưởng thành tối thiểu
+    maxMatureSize: number; // Kích thước trưởng thành tối đa
+    humidityRange: 'NONE' | 'VERY_LOW' | 'LOW' | 'MEDIUM' | 'HIGH' | 'VERY_HIGH'; // Độ ẩm theo ENUM LEVEL
+    lightRequirement:
+    | 'NONE'
+    | 'VERY_LOW'
+    | 'LOW'
+    | 'MEDIUM'
+    | 'HIGH'
+    | 'VERY_HIGH'; // Mức độ ánh sáng theo ENUM LEVEL
+    approved_content: boolean; // Xác nhận nội dung
+    Category:{
+      category_name: string;
+    }
 }
 
 interface PlantColumn {
@@ -30,202 +55,229 @@ interface PlantColumn {
   render?: (plant: PlantTable) => JSX.Element;
 }
 
-const initialPlantData: PlantTable[] = [
-  {
-    id: 1,
-    name: 'Lúa',
-    scientificName: 'Oryza sativa',
-    image: 'https://avatar.iran.liara.run/public/job/firefighters/male',
-    overview: 'Cây lúa là một loại cây lương thực chính',
-    characteristic: 'Thân thẳng, lá dài, hạt nhỏ',
-    function: 'Cung cấp lương thực',
-    meaning: 'Biểu tượng của nền nông nghiệp',
-    difficulty_level: 'MEDIUM',
-    soil_type: 'CLAY',
-    category_id: '1',
-    habitatLocation: 'OUTDOOR',
-    minTemperature: 20,
-    maxTemperature: 35,
-    minMatureSize: 0.5,
-    maxMatureSize: 1.5,
-    humidityRange: 'HIGH',
-    lightRequirement: 'HIGH',
-    approved_content: true
-  },
-  {
-    id: 2,
-    name: 'Ngô',
-    scientificName: 'Zea mays',
-    image: 'https://avatar.iran.liara.run/public/job/firefighters/male',
-    overview: 'Cây ngô là cây lương thực phổ biến',
-    characteristic: 'Thân to, lá rộng, bắp dài',
-    function: 'Thực phẩm và thức ăn chăn nuôi',
-    meaning: 'Đại diện cho sự phát triển nông nghiệp',
-    difficulty_level: 'MEDIUM',
-    soil_type: 'LOAMY',
-    category_id: '1',
-    habitatLocation: 'OUTDOOR',
-    minTemperature: 15,
-    maxTemperature: 30,
-    minMatureSize: 1.5,
-    maxMatureSize: 2.5,
-    humidityRange: 'MEDIUM',
-    lightRequirement: 'HIGH',
-    approved_content: true
-  },
-  {
-    id: 3,
-    name: 'Cà phê',
-    scientificName: 'Coffea robusta',
-    image: 'https://avatar.iran.liara.run/public/job/firefighters/male',
-    overview: 'Cây công nghiệp quan trọng',
-    characteristic: 'Thân gỗ nhỏ, lá xanh đậm',
-    function: 'Sản xuất đồ uống',
-    meaning: 'Biểu tượng của văn hóa thưởng thức',
-    difficulty_level: 'HARD',
-    soil_type: 'LOAMY',
-    category_id: '2',
-    habitatLocation: 'OUTDOOR',
-    minTemperature: 18,
-    maxTemperature: 28,
-    minMatureSize: 2,
-    maxMatureSize: 4,
-    humidityRange: 'MEDIUM',
-    lightRequirement: 'MEDIUM',
-    approved_content: true
-  }
-];
-
 const PlantsManagement: React.FC = () => {
-  const [plantData, setPlantData] = useState<PlantTable[]>(initialPlantData);
-  const [showAddForm, setShowAddForm] = useState(false);
-  const [newPlant, setNewPlant] = useState<Omit<PlantTable, 'id'>>({
-    name: '',
-    scientificName: '',
-    image: '',
-    overview: '',
-    characteristic: '',
-    function: '',
-    meaning: '',
-    difficulty_level: 'EASY',
-    soil_type: 'LOAMY',
-    category_id: '',
-    habitatLocation: 'INDOOR',
+  const [Categories, setCategories] = useState<Category[]>([]);
+  const [plants, setPlants] = useState<Plant[]>([]);
+  const [showForm, setShowForm] = useState(false);
+
+  const [newPlant, setNewPlant] = useState<Omit<PlantTable, "id" | "created_at">>({
+    plant_name: "",
+    scientific_name: "",
+    image_url: [],
+    overview: [],
+    characteristic: [],
+    function: [],
+    meaning: [],
+    difficulty_level: "EASY",
+    soil_type: "LOAM",
+    category_id: "",
+    habitatLocation: "INDOOR",
     minTemperature: 0,
     maxTemperature: 0,
     minMatureSize: 0,
     maxMatureSize: 0,
-    humidityRange: 'MEDIUM',
-    lightRequirement: 'MEDIUM',
-    approved_content: false
+    humidityRange: "MEDIUM",
+    lightRequirement: "MEDIUM",
+    approved_content: false,
+    Category: {
+      category_name: "",
+    }
   });
 
-  const handleEdit = (id: number) => {
-    const plantToEdit = plantData.find(plant => plant.id === id);
-    if (plantToEdit) {
-      setNewPlant({
-        name: plantToEdit.name,
-        scientificName: plantToEdit.scientificName,
-        image: plantToEdit.image,
-        overview: plantToEdit.overview,
-        characteristic: plantToEdit.characteristic,
-        function: plantToEdit.function,
-        meaning: plantToEdit.meaning,
-        difficulty_level: plantToEdit.difficulty_level,
-        soil_type: plantToEdit.soil_type,
-        category_id: plantToEdit.category_id,
-        habitatLocation: plantToEdit.habitatLocation,
-        minTemperature: plantToEdit.minTemperature,
-        maxTemperature: plantToEdit.maxTemperature,
-        minMatureSize: plantToEdit.minMatureSize,
-        maxMatureSize: plantToEdit.maxMatureSize,
-        humidityRange: plantToEdit.humidityRange,
-        lightRequirement: plantToEdit.lightRequirement,
-        approved_content: plantToEdit.approved_content
-      });
-      setShowAddForm(true);
+  useEffect(() => {
+    async function fetchPlants() {
+      try {
+        const data = await plantService.getPlants();
+        setPlants(data);
+        console.log('data cây trông: ', data);
+      } catch (error) {
+        console.error('Error fetching plants:', error);
+      }
     }
-  };
-  const handleDelete = (id: number) => {
-    if (window.confirm('Bạn có chắc muốn xóa không?')) {
-      setPlantData(prev => prev.filter(plant => plant.id !== id));
-    }
-  };
+    fetchPlants();
+  }, []);
 
-  const isValidUrl = (url: string) => {
-    try {
-      new URL(url);
-      return url.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/i) !== null;
-    } catch (error) {
-      console.error(error);
-      return false;
+  useEffect(() => {
+    async function fetchCategories() {
+      try {
+        const categoryData = await categoryService.getAllCategories();
+        setCategories(categoryData);
+        console.log('data danh mục: ', categoryData);
+      } catch (error) {
+        console.error('Error fetching categories:', error);
+      }
     }
-  };
+    fetchCategories();
+  }, []);
 
-  const handleAddPlant = () => {
-    if (!isValidUrl(newPlant.image)) {
-      alert(
-        'URL hình ảnh không hợp lệ! Vui lòng nhập URL kết thúc bằng .jpg, .jpeg, .png, .gif, .bmp hoặc .webp'
-      );
-      return;
-    }
+  // const handleEdit = (id: number) => {
+  //   const plantToEdit = plantData.find(plant => plant.id === id);
+  //   if (plantToEdit) {
+  //     setNewPlant({
+  //       name: plantToEdit.name,
+  //       scientificName: plantToEdit.scientificName,
+  //       image: plantToEdit.image,
+  //       overview: plantToEdit.overview,
+  //       characteristic: plantToEdit.characteristic,
+  //       function: plantToEdit.function,
+  //       meaning: plantToEdit.meaning,
+  //       difficulty_level: plantToEdit.difficulty_level,
+  //       soil_type: plantToEdit.soil_type,
+  //       category_id: plantToEdit.category_id,
+  //       habitatLocation: plantToEdit.habitatLocation,
+  //       minTemperature: plantToEdit.minTemperature,
+  //       maxTemperature: plantToEdit.maxTemperature,
+  //       minMatureSize: plantToEdit.minMatureSize,
+  //       maxMatureSize: plantToEdit.maxMatureSize,
+  //       humidityRange: plantToEdit.humidityRange,
+  //       lightRequirement: plantToEdit.lightRequirement,
+  //       approved_content: plantToEdit.approved_content
+  //     });
+  //     setShowAddForm(true);
+  //   }
+  // };
+  // const handleDelete = (id: number) => {
+  //   if (window.confirm('Bạn có chắc muốn xóa không?')) {
+  //     setPlantData(prev => prev.filter(plant => plant.id !== id));
+  //   }
+  // };
 
-    const newId = Math.max(...plantData.map(p => p.id)) + 1;
-    setPlantData(prev => [...prev, { ...newPlant, id: newId }]);
-    setShowAddForm(false);
-    setNewPlant({
-      name: '',
-      scientificName: '',
-      image: '',
-      overview: '',
-      characteristic: '',
-      function: '',
-      meaning: '',
-      difficulty_level: 'EASY',
-      soil_type: 'LOAMY',
-      category_id: '',
-      habitatLocation: 'INDOOR',
-      minTemperature: 0,
-      maxTemperature: 0,
-      minMatureSize: 0,
-      maxMatureSize: 0,
-      humidityRange: 'MEDIUM',
-      lightRequirement: 'MEDIUM',
-      approved_content: false
-    });
-  };
+  // const isValidUrl = (url: string) => {
+  //   try {
+  //     new URL(url);
+  //     return url.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/i) !== null;
+  //   } catch (error) {
+  //     console.error(error);
+  //     return false;
+  //   }
+  // };
+
+  // const handleAddPlant = () => {
+  //   if (!isValidUrl(newPlant.image)) {
+  //     alert(
+  //       'URL hình ảnh không hợp lệ! Vui lòng nhập URL kết thúc bằng .jpg, .jpeg, .png, .gif, .bmp hoặc .webp'
+  //     );
+  //     return;
+  //   }
+
+  //   const newId = Math.max(...plantData.map(p => p.id)) + 1;
+  //   setPlantData(prev => [...prev, { ...newPlant, id: newId }]);
+  //   setShowAddForm(false);
+  //   setNewPlant({
+  //     name: '',
+  //     scientificName: '',
+  //     image: '',
+  //     overview: '',
+  //     characteristic: '',
+  //     function: '',
+  //     meaning: '',
+  //     difficulty_level: 'EASY',
+  //     soil_type: 'LOAMY',
+  //     category_id: '',
+  //     habitatLocation: 'INDOOR',
+  //     minTemperature: 0,
+  //     maxTemperature: 0,
+  //     minMatureSize: 0,
+  //     maxMatureSize: 0,
+  //     humidityRange: 'MEDIUM',
+  //     lightRequirement: 'MEDIUM',
+  //     approved_content: false
+  //   });
+  // };
 
   const plantColumns: PlantColumn[] = [
     {
-      key: 'image',
-      title: 'Hình ảnh',
+      key: "image_url",
+      title: "Hình ảnh",
       render: (plant: PlantTable) => (
         <img
-          src={plant.image}
-          alt={plant.name}
-          className="h-10 w-10 rounded-full object-cover"
+          src={plant.image_url[0] || "/default-image.jpg"}
+          alt={plant.plant_name}
+          className="h-20 w-32 rounded-full object-cover"
         />
-      )
+      ),
     },
-    { key: 'name', title: 'Tên cây trồng' },
-    { key: 'scientificName', title: 'Tên khoa học' },
-    { key: 'overview', title: 'Tổng quan' },
-    { key: 'characteristic', title: 'Đặc điểm' },
-    { key: 'function', title: 'Công dụng' },
-    { key: 'meaning', title: 'Ý nghĩa' }
+    { key: "plant_name", title: "Tên cây trồng" },
+    { key: "scientific_name", title: "Tên khoa học" },
+    {
+      key: "overview",
+      title: "Tổng quan",
+      render: (plant: PlantTable) => <span>{plant.overview.join(", ")}</span>,
+    },
+    {
+      key: "characteristic",
+      title: "Đặc điểm",
+      render: (plant: PlantTable) => <span>{plant.characteristic.join(", ")}</span>,
+    },
+    {
+      key: "function",
+      title: "Công dụng",
+      render: (plant: PlantTable) => <span>{plant.function.join(", ")}</span>,
+    },
+    {
+      key: "meaning",
+      title: "Ý nghĩa",
+      render: (plant: PlantTable) => <span>{plant.meaning.join(", ")}</span>,
+    },
+    { key: "difficulty_level", title: "Độ khó" },
+    { key: "soil_type", title: "Loại đất" },
+    { key: "category_id", title: "ID danh mục" },
+    { key: "habitatLocation", title: "Vị trí sinh trưởng" },
+    {
+      key: "minTemperature",
+      title: "Nhiệt độ tối thiểu (°C)",
+      render: (plant: PlantTable) => <span>{plant.minTemperature}°C</span>,
+    },
+    {
+      key: "maxTemperature",
+      title: "Nhiệt độ tối đa (°C)",
+      render: (plant: PlantTable) => <span>{plant.maxTemperature}°C</span>,
+    },
+    {
+      key: "minMatureSize",
+      title: "Kích thước tối thiểu (cm)",
+      render: (plant: PlantTable) => <span>{plant.minMatureSize} cm</span>,
+    },
+    {
+      key: "maxMatureSize",
+      title: "Kích thước tối đa (cm)",
+      render: (plant: PlantTable) => <span>{plant.maxMatureSize} cm</span>,
+    },
+    { key: "humidityRange", title: "Độ ẩm" },
+    { key: "lightRequirement", title: "Yêu cầu ánh sáng" },
+    {
+      key: "approved_content",
+      title: "Duyệt nội dung",
+      render: (plant: PlantTable) => (
+        <span
+          className={`px-2 py-1 rounded ${
+            plant.approved_content ? "bg-green-500 text-white" : "bg-red-500 text-white"
+          }`}
+        >
+          {plant.approved_content ? "Đã duyệt" : "Chưa duyệt"}
+        </span>
+      ),
+    },
   ];
+  
 
   const actionColumn: ActionColumn<PlantTable> = {
     title: 'Hành động',
     actions: [
       {
         label: 'Sửa',
-        onClick: plant => handleEdit(plant.id),
+        onClick: plant => 
+          // handleEdit(plant.id)
+          {}
+        ,
         className: 'bg-blue-400 hover:bg-blue-600'
       },
       {
         label: 'Xóa',
-        onClick: plant => handleDelete(plant.id),
+        onClick: plant => 
+          // handleDelete(plant.id)
+          {}
+        , 
         className: 'bg-red-400 hover:bg-red-700'
       }
     ]
@@ -235,14 +287,17 @@ const PlantsManagement: React.FC = () => {
     <>
       <div className="flex justify-end pt-5 pr-2 pb-0.5">
         <button
-          onClick={() => setShowAddForm(true)}
-          className="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-900"
+          onClick={() => {
+            setShowForm(!showForm);
+            // if (!showForm) resetUserForm();
+          }}
+          className={`rounded px-4 py-2 text-white ${!showForm ? 'bg-green-500 hover:bg-green-900' : 'bg-red-500 hover:bg-red-400'}`}
         >
-          Thêm cây mới
+          {showForm ? 'X' : 'Thêm cây trồng'}
         </button>
       </div>
 
-      {showAddForm && (
+      {showForm && (
         <div className="mb-6 rounded-lg bg-white p-6 shadow-md">
           <h2 className="mb-4 text-xl font-bold">Thêm cây mới</h2>
           <form
@@ -252,7 +307,7 @@ const PlantsManagement: React.FC = () => {
             }}
           >
             {plantColumns.map(column =>
-              column.key !== 'image' ? (
+              column.key !== 'image_url' ? (
                 <div key={column.key} className="mb-3">
                   <label className="mb-1 block text-sm font-medium">
                     {column.title} <span className="text-red-500">*</span>
@@ -279,7 +334,7 @@ const PlantsManagement: React.FC = () => {
                   </label>
                   <input
                     type="text"
-                    value={newPlant.image}
+                    value={newPlant.image_url}
                     onChange={e =>
                       setNewPlant(prev => ({ ...prev, image: e.target.value }))
                     }
@@ -522,9 +577,10 @@ const PlantsManagement: React.FC = () => {
       )}
 
       <Table
-        data={plantData}
+        data={plants}
         columns={plantColumns}
         actionColumn={actionColumn}
+        
       />
     </>
   );

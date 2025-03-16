@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import {User} from '../../../types/Model';
 import { Table } from '../../../components';
 import type { ActionColumn } from '../../../components';
 import provinces from '../../../data/provinces.json';
+import { District, Ward } from '../../../types/Model';
 import {
   getUsers,
   updateUser,
@@ -45,8 +47,8 @@ const UserList: React.FC = () => {
   //roles
   const [roles, setRoles] = useState<Role[]>([]);
   //tỉnh thành
-  const [districts, setDistricts] = useState([]);
-  const [wards, setWards] = useState([]);
+  const [districts, setDistricts] = useState<District[]>([]);
+  const [wards, setWards] = useState<Ward[]>([]);
 
   const [userData, setUserData] = useState<UserTable[]>([]);
   const [showForm, setShowForm] = useState(false);
@@ -197,8 +199,9 @@ const handleDisable = async (id: string) => {
             Role: roles.find(r => r.id === response.role_id) || null
           }
         ]);
+        toast.success('Thêm người dùng thành công!');
       }
-      toast.success('Thêm người dùng thành công!');
+      
 
       setShowForm(false);
       setNewUser({
@@ -211,7 +214,7 @@ const handleDisable = async (id: string) => {
         district: '',
         province: ''
       });
-    } catch (error) {
+    } catch (error:any) {
       console.error('Lỗi khi cập nhật user:', error);
       toast.error(error.message);
     }
@@ -320,7 +323,7 @@ const handleDisable = async (id: string) => {
     setShowForm(true); // Hiển thị form chỉnh sửa
   };
 
-  const handleProvinceChange = e => {
+  const handleProvinceChange = (e:React.ChangeEvent<HTMLSelectElement>) => {
     const provinceCode = Number(e.target.value);
     const selectedProvince = provinces.find(p => p.code === provinceCode);
 
@@ -334,7 +337,7 @@ const handleDisable = async (id: string) => {
     setWards([]);
   };
 
-  const handleDistrictChange = e => {
+  const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const districtCode = Number(e.target.value);
     const selectedDistrict = districts.find(d => d.code === districtCode);
 
