@@ -44,9 +44,6 @@ interface PlantTable {
     | 'HIGH'
     | 'VERY_HIGH'; // Mức độ ánh sáng theo ENUM LEVEL
     approved_content: boolean; // Xác nhận nội dung
-    Category:{
-      category_name: string;
-    }
 }
 
 interface PlantColumn {
@@ -79,9 +76,6 @@ const PlantsManagement: React.FC = () => {
     humidityRange: "MEDIUM",
     lightRequirement: "MEDIUM",
     approved_content: false,
-    Category: {
-      category_name: "",
-    }
   });
 
   useEffect(() => {
@@ -152,38 +146,48 @@ const PlantsManagement: React.FC = () => {
   //   }
   // };
 
-  // const handleAddPlant = () => {
-  //   if (!isValidUrl(newPlant.image)) {
-  //     alert(
-  //       'URL hình ảnh không hợp lệ! Vui lòng nhập URL kết thúc bằng .jpg, .jpeg, .png, .gif, .bmp hoặc .webp'
-  //     );
-  //     return;
-  //   }
-
-  //   const newId = Math.max(...plantData.map(p => p.id)) + 1;
-  //   setPlantData(prev => [...prev, { ...newPlant, id: newId }]);
-  //   setShowAddForm(false);
-  //   setNewPlant({
-  //     name: '',
-  //     scientificName: '',
-  //     image: '',
-  //     overview: '',
-  //     characteristic: '',
-  //     function: '',
-  //     meaning: '',
-  //     difficulty_level: 'EASY',
-  //     soil_type: 'LOAMY',
-  //     category_id: '',
-  //     habitatLocation: 'INDOOR',
-  //     minTemperature: 0,
-  //     maxTemperature: 0,
-  //     minMatureSize: 0,
-  //     maxMatureSize: 0,
-  //     humidityRange: 'MEDIUM',
-  //     lightRequirement: 'MEDIUM',
-  //     approved_content: false
-  //   });
-  // };
+  const handleAddPlant = async () => {
+    try {
+      console.log("Dữ liệu được gửi lên API:", newPlant); // Kiểm tra dữ liệu trước khi gửi
+  
+      // Gọi API để tạo mới cây trồng
+      const createdPlant = await plantService.createPlant(newPlant);
+  
+      console.log("Phản hồi từ API:", createdPlant); // Kiểm tra phản hồi từ API
+  
+      // Cập nhật state `plants` để hiển thị cây trồng mới trong bảng
+      setPlants(prevPlants => [...prevPlants, createdPlant]);
+  
+      // Đóng form và reset form
+      setShowForm(false);
+      setNewPlant({
+        plant_name: "",
+        scientific_name: "",
+        image_url: [],
+        overview: [],
+        characteristic: [],
+        function: [],
+        meaning: [],
+        difficulty_level: "EASY",
+        soil_type: "LOAM",
+        category_id: "",
+        habitatLocation: "INDOOR",
+        minTemperature: 0,
+        maxTemperature: 0,
+        minMatureSize: 0,
+        maxMatureSize: 0,
+        humidityRange: "MEDIUM",
+        lightRequirement: "MEDIUM",
+        approved_content: false
+      });
+  
+      // Hiển thị thông báo thành công (tuỳ chọn)
+      alert("Cây trồng đã được thêm thành công!");
+    } catch (error) {
+      console.error('Error creating plant:', error);
+      alert("Có lỗi xảy ra khi thêm cây trồng. Vui lòng thử lại!");
+    }
+  };
 
   const plantColumns: PlantColumn[] = [
     {
@@ -298,283 +302,447 @@ const PlantsManagement: React.FC = () => {
       </div>
 
       {showForm && (
-        <div className="mb-6 rounded-lg bg-white p-6 shadow-md">
-          <h2 className="mb-4 text-xl font-bold">Thêm cây mới</h2>
-          <form
-            onSubmit={e => {
-              e.preventDefault();
-              handleAddPlant();
-            }}
-          >
-            {plantColumns.map(column =>
-              column.key !== 'image_url' ? (
-                <div key={column.key} className="mb-3">
-                  <label className="mb-1 block text-sm font-medium">
-                    {column.title} <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={String(
-                      newPlant[column.key as keyof typeof newPlant]
-                    )}
-                    onChange={e =>
-                      setNewPlant(prev => ({
-                        ...prev,
-                        [column.key]: e.target.value
-                      }))
-                    }
-                    className="w-full rounded border p-2"
-                    required
-                  />
-                </div>
-              ) : (
-                <div key={column.key} className="mb-3">
-                  <label className="mb-1 block text-sm font-medium">
-                    {column.title} (URL) <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    value={newPlant.image_url}
-                    onChange={e =>
-                      setNewPlant(prev => ({ ...prev, image: e.target.value }))
-                    }
-                    className="w-full rounded border p-2"
-                    required
-                    placeholder="Nhập URL kết thúc bằng .jpg, .jpeg, .png, .gif, .bmp hoặc .webp"
-                  />
-                </div>
-              )
-            )}
+  <div className="mb-6 rounded-lg bg-white p-6 shadow-md">
+    <h2 className="mb-4 text-xl font-bold">Thêm cây mới</h2>
+    <form
+      onSubmit={e => {
+        e.preventDefault();
+        handleAddPlant();
+      }}
+    >
+      {/* Tên cây trồng */}
+      <div className="mb-3">
+        <label className="mb-1 block text-sm font-medium">
+          Tên cây trồng <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          value={newPlant.plant_name}
+          onChange={e =>
+            setNewPlant(prev => ({
+              ...prev,
+              plant_name: e.target.value
+            }))
+          }
+          className="w-full rounded border p-2"
+          required
+        />
+      </div>
 
-            <div className="mb-3">
-              <label className="mb-1 block text-sm font-medium">
-                Mức độ khó <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={newPlant.difficulty_level}
-                onChange={e =>
-                  setNewPlant(prev => ({
-                    ...prev,
-                    difficulty_level: e.target.value as
-                      | 'EASY'
-                      | 'MEDIUM'
-                      | 'HARD'
-                  }))
-                }
-                className="w-full rounded border p-2"
-                required
-              >
-                <option value="">Chọn mức độ khó</option>
-                <option value="EASY">Dễ</option>
-                <option value="MEDIUM">Trung bình</option>
-                <option value="HARD">Khó</option>
-              </select>
-            </div>
+      {/* Tên khoa học */}
+      <div className="mb-3">
+        <label className="mb-1 block text-sm font-medium">
+          Tên khoa học <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          value={newPlant.scientific_name}
+          onChange={e =>
+            setNewPlant(prev => ({
+              ...prev,
+              scientific_name: e.target.value
+            }))
+          }
+          className="w-full rounded border p-2"
+          required
+        />
+      </div>
 
-            <div className="mb-3">
-              <label className="mb-1 block text-sm font-medium">
-                Loại đất <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={newPlant.soil_type}
-                onChange={e =>
-                  setNewPlant(prev => ({
-                    ...prev,
-                    soil_type: e.target.value as
-                      | 'CLAY'
-                      | 'SANDY'
-                      | 'SILTY'
-                      | 'PEATY'
-                      | 'CHALKY'
-                      | 'LOAMY'
-                  }))
-                }
-                className="w-full rounded border p-2"
-                required
-              >
-                <option value="">Chọn loại đất</option>
-                <option value="LOAMY">Đất thịt</option>
-                <option value="SANDY">Đất cát</option>
-                <option value="CLAY">Đất sét</option>
-              </select>
-            </div>
+      {/* URL hình ảnh */}
+      <div className="mb-3">
+        <label className="mb-1 block text-sm font-medium">
+          URL hình ảnh (cách nhau bằng dấu phẩy) <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          value={newPlant.image_url.join(", ")}
+          onChange={e =>
+            setNewPlant(prev => ({
+              ...prev,
+              image_url: e.target.value.split(", ")
+            }))
+          }
+          className="w-full rounded border p-2"
+          required
+        />
+      </div>
 
-            <div className="mb-3">
-              <label className="mb-1 block text-sm font-medium">
-                ID Danh mục <span className="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                value={newPlant.category_id}
-                onChange={e =>
-                  setNewPlant(prev => ({
-                    ...prev,
-                    category_id: e.target.value
-                  }))
-                }
-                className="w-full rounded border p-2"
-                required
-              />
-            </div>
+      {/* Mô tả tổng quan */}
+      <div className="mb-3">
+        <label className="mb-1 block text-sm font-medium">
+          Mô tả tổng quan (cách nhau bằng dấu phẩy) <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          value={newPlant.overview.join(", ")}
+          onChange={e =>
+            setNewPlant(prev => ({
+              ...prev,
+              overview: e.target.value.split(", ")
+            }))
+          }
+          className="w-full rounded border p-2"
+          required
+        />
+      </div>
 
-            <div className="mb-3">
-              <label className="mb-1 block text-sm font-medium">
-                Vị trí sinh sống <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={newPlant.habitatLocation}
-                onChange={e =>
-                  setNewPlant(prev => ({
-                    ...prev,
-                    habitatLocation: e.target.value as
-                      | 'INDOOR'
-                      | 'OUTDOOR'
-                      | 'BOTH'
-                  }))
-                }
-                className="w-full rounded border p-2"
-                required
-              >
-                <option value="">Chọn vị trí</option>
-                <option value="INDOOR">Trong nhà</option>
-                <option value="OUTDOOR">Ngoài trời</option>
-              </select>
-            </div>
+      {/* Đặc điểm */}
+      <div className="mb-3">
+        <label className="mb-1 block text-sm font-medium">
+          Đặc điểm (cách nhau bằng dấu phẩy) <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          value={newPlant.characteristic.join(", ")}
+          onChange={e =>
+            setNewPlant(prev => ({
+              ...prev,
+              characteristic: e.target.value.split(", ")
+            }))
+          }
+          className="w-full rounded border p-2"
+          required
+        />
+      </div>
 
-            <div className="mb-3">
-              <label className="mb-1 block text-sm font-medium">
-                Nhiệt độ (°C) <span className="text-red-500">*</span>
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  value={newPlant.minTemperature}
-                  onChange={e =>
-                    setNewPlant(prev => ({
-                      ...prev,
-                      minTemperature: Number(e.target.value)
-                    }))
-                  }
-                  className="w-1/2 rounded border p-2"
-                  placeholder="Tối thiểu"
-                  required
-                />
-                <input
-                  type="number"
-                  value={newPlant.maxTemperature}
-                  onChange={e =>
-                    setNewPlant(prev => ({
-                      ...prev,
-                      maxTemperature: Number(e.target.value)
-                    }))
-                  }
-                  className="w-1/2 rounded border p-2"
-                  placeholder="Tối đa"
-                  required
-                />
-              </div>
-            </div>
+      {/* Công dụng */}
+      <div className="mb-3">
+        <label className="mb-1 block text-sm font-medium">
+          Công dụng (cách nhau bằng dấu phẩy) <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          value={newPlant.function.join(", ")}
+          onChange={e =>
+            setNewPlant(prev => ({
+              ...prev,
+              function: e.target.value.split(", ")
+            }))
+          }
+          className="w-full rounded border p-2"
+          required
+        />
+      </div>
 
-            <div className="mb-3">
-              <label className="mb-1 block text-sm font-medium">
-                Kích thước trưởng thành (m){' '}
-                <span className="text-red-500">*</span>
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  value={newPlant.minMatureSize}
-                  onChange={e =>
-                    setNewPlant(prev => ({
-                      ...prev,
-                      minMatureSize: Number(e.target.value)
-                    }))
-                  }
-                  className="w-1/2 rounded border p-2"
-                  placeholder="Tối thiểu"
-                  required
-                />
-                <input
-                  type="number"
-                  value={newPlant.maxMatureSize}
-                  onChange={e =>
-                    setNewPlant(prev => ({
-                      ...prev,
-                      maxMatureSize: Number(e.target.value)
-                    }))
-                  }
-                  className="w-1/2 rounded border p-2"
-                  placeholder="Tối đa"
-                  required
-                />
-              </div>
-            </div>
+      {/* Ý nghĩa */}
+      <div className="mb-3">
+        <label className="mb-1 block text-sm font-medium">
+          Ý nghĩa (cách nhau bằng dấu phẩy) <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="text"
+          value={newPlant.meaning.join(", ")}
+          onChange={e =>
+            setNewPlant(prev => ({
+              ...prev,
+              meaning: e.target.value.split(", ")
+            }))
+          }
+          className="w-full rounded border p-2"
+          required
+        />
+      </div>
 
-            <div className="mb-3">
-              <label className="mb-1 block text-sm font-medium">
-                Độ ẩm <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={newPlant.humidityRange}
-                onChange={e =>
-                  setNewPlant(prev => ({
-                    ...prev,
-                    humidityRange: e.target.value as 'LOW' | 'MEDIUM' | 'HIGH'
-                  }))
-                }
-                className="w-full rounded border p-2"
-                required
-              >
-                <option value="">Chọn độ ẩm</option>
-                <option value="LOW">Thấp</option>
-                <option value="MEDIUM">Trung bình</option>
-                <option value="HIGH">Cao</option>
-              </select>
-            </div>
+      {/* Mức độ khó */}
+      <div className="mb-3">
+        <label className="mb-1 block text-sm font-medium">
+          Mức độ khó <span className="text-red-500">*</span>
+        </label>
+        <select
+          value={newPlant.difficulty_level}
+          onChange={e =>
+            setNewPlant(prev => ({
+              ...prev,
+              difficulty_level: e.target.value as
+                | 'EASY'
+                | 'MEDIUM'
+                | 'HARD'
+                | 'VERY_HARD'
+                | 'EXTREME'
+            }))
+          }
+          className="w-full rounded border p-2"
+          required
+        >
+          <option value="EASY">Dễ</option>
+          <option value="MEDIUM">Trung bình</option>
+          <option value="HARD">Khó</option>
+          <option value="VERY_HARD">Rất khó</option>
+          <option value="EXTREME">Cực kỳ khó</option>
+        </select>
+      </div>
 
-            <div className="mb-3">
-              <label className="mb-1 block text-sm font-medium">
-                Yêu cầu ánh sáng <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={newPlant.lightRequirement}
-                onChange={e =>
-                  setNewPlant(prev => ({
-                    ...prev,
-                    lightRequirement: e.target.value as
-                      | 'LOW'
-                      | 'MEDIUM'
-                      | 'HIGH'
-                  }))
-                }
-                className="w-full rounded border p-2"
-                required
-              >
-                <option value="">Chọn yêu cầu ánh sáng</option>
-                <option value="LOW">Thấp</option>
-                <option value="MEDIUM">Trung bình</option>
-                <option value="HIGH">Cao</option>
-              </select>
-            </div>
+      {/* Loại đất */}
+      <div className="mb-3">
+        <label className="mb-1 block text-sm font-medium">
+          Loại đất <span className="text-red-500">*</span>
+        </label>
+        <select
+          value={newPlant.soil_type}
+          onChange={e =>
+            setNewPlant(prev => ({
+              ...prev,
+              soil_type: e.target.value as
+                | 'SANDY'
+                | 'CLAY'
+                | 'SILT'
+                | 'PEAT'
+                | 'CHALK'
+                | 'LOAM'
+            }))
+          }
+          className="w-full rounded border p-2"
+          required
+        >
+          <option value="SANDY">Đất cát</option>
+          <option value="CLAY">Đất sét</option>
+          <option value="SILT">Đất bùn</option>
+          <option value="PEAT">Đất than bùn</option>
+          <option value="CHALK">Đất phấn</option>
+          <option value="LOAM">Đất thịt</option>
+        </select>
+      </div>
 
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                className="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
-              >
-                Lưu
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowAddForm(false)}
-                className="rounded bg-gray-500 px-4 py-2 text-white hover:bg-gray-600"
-              >
-                Hủy
-              </button>
-            </div>
-          </form>
+      {/* Danh mục */}
+      <div className="mb-3">
+        <label className="mb-1 block text-sm font-medium">
+          Danh mục <span className="text-red-500">*</span>
+        </label>
+        <select
+          value={newPlant.category_id}
+          onChange={e =>
+            setNewPlant(prev => ({
+              ...prev,
+              category_id: e.target.value
+            }))
+          }
+          className="w-full rounded border p-2"
+          required
+        >
+          <option value="">Chọn danh mục</option>
+          {Categories.map(category => (
+            <option key={category.id} value={category.id}>
+              {category.category_name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Vị trí sinh trưởng */}
+      <div className="mb-3">
+        <label className="mb-1 block text-sm font-medium">
+          Vị trí sinh trưởng <span className="text-red-500">*</span>
+        </label>
+        <select
+          value={newPlant.habitatLocation}
+          onChange={e =>
+            setNewPlant(prev => ({
+              ...prev,
+              habitatLocation: e.target.value as
+                | 'INDOOR'
+                | 'OUTDOOR'
+                | 'BALCONY'
+                | 'GARDEN'
+                | 'GREENHOUSE'
+                | 'WINDOW_SILL'
+                | 'KITCHEN'
+                | 'BATHROOM'
+                | 'TERRACE'
+                | 'OFFICE'
+                | 'HYDROPONICS'
+                | 'WALL_PLANTER'
+            }))
+          }
+          className="w-full rounded border p-2"
+          required
+        >
+          <option value="INDOOR">Trong nhà</option>
+          <option value="OUTDOOR">Ngoài trời</option>
+          <option value="BALCONY">Ban công</option>
+          <option value="GARDEN">Vườn</option>
+          <option value="GREENHOUSE">Nhà kính</option>
+          <option value="WINDOW_SILL">Bệ cửa sổ</option>
+          <option value="KITCHEN">Nhà bếp</option>
+          <option value="BATHROOM">Phòng tắm</option>
+          <option value="TERRACE">Sân thượng</option>
+          <option value="OFFICE">Văn phòng</option>
+          <option value="HYDROPONICS">Thủy canh</option>
+          <option value="WALL_PLANTER">Chậu treo tường</option>
+        </select>
+      </div>
+
+      {/* Nhiệt độ tối thiểu và tối đa */}
+      <div className="mb-3">
+        <label className="mb-1 block text-sm font-medium">
+          Nhiệt độ (°C) <span className="text-red-500">*</span>
+        </label>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            value={newPlant.minTemperature}
+            onChange={e =>
+              setNewPlant(prev => ({
+                ...prev,
+                minTemperature: Number(e.target.value)
+              }))
+            }
+            className="w-1/2 rounded border p-2"
+            placeholder="Tối thiểu"
+            required
+          />
+          <input
+            type="number"
+            value={newPlant.maxTemperature}
+            onChange={e =>
+              setNewPlant(prev => ({
+                ...prev,
+                maxTemperature: Number(e.target.value)
+              }))
+            }
+            className="w-1/2 rounded border p-2"
+            placeholder="Tối đa"
+            required
+          />
         </div>
-      )}
+      </div>
+
+      {/* Kích thước trưởng thành tối thiểu và tối đa */}
+      <div className="mb-3">
+        <label className="mb-1 block text-sm font-medium">
+          Kích thước trưởng thành (cm) <span className="text-red-500">*</span>
+        </label>
+        <div className="flex gap-2">
+          <input
+            type="number"
+            value={newPlant.minMatureSize}
+            onChange={e =>
+              setNewPlant(prev => ({
+                ...prev,
+                minMatureSize: Number(e.target.value)
+              }))
+            }
+            className="w-1/2 rounded border p-2"
+            placeholder="Tối thiểu"
+            required
+          />
+          <input
+            type="number"
+            value={newPlant.maxMatureSize}
+            onChange={e =>
+              setNewPlant(prev => ({
+                ...prev,
+                maxMatureSize: Number(e.target.value)
+              }))
+            }
+            className="w-1/2 rounded border p-2"
+            placeholder="Tối đa"
+            required
+          />
+        </div>
+      </div>
+
+      {/* Độ ẩm */}
+      <div className="mb-3">
+        <label className="mb-1 block text-sm font-medium">
+          Độ ẩm <span className="text-red-500">*</span>
+        </label>
+        <select
+          value={newPlant.humidityRange}
+          onChange={e =>
+            setNewPlant(prev => ({
+              ...prev,
+              humidityRange: e.target.value as
+                | 'NONE'
+                | 'VERY_LOW'
+                | 'LOW'
+                | 'MEDIUM'
+                | 'HIGH'
+                | 'VERY_HIGH'
+            }))
+          }
+          className="w-full rounded border p-2"
+          required
+        >
+          <option value="NONE">Không</option>
+          <option value="VERY_LOW">Rất thấp</option>
+          <option value="LOW">Thấp</option>
+          <option value="MEDIUM">Trung bình</option>
+          <option value="HIGH">Cao</option>
+          <option value="VERY_HIGH">Rất cao</option>
+        </select>
+      </div>
+
+      {/* Yêu cầu ánh sáng */}
+      <div className="mb-3">
+        <label className="mb-1 block text-sm font-medium">
+          Yêu cầu ánh sáng <span className="text-red-500">*</span>
+        </label>
+        <select
+          value={newPlant.lightRequirement}
+          onChange={e =>
+            setNewPlant(prev => ({
+              ...prev,
+              lightRequirement: e.target.value as
+                | 'NONE'
+                | 'VERY_LOW'
+                | 'LOW'
+                | 'MEDIUM'
+                | 'HIGH'
+                | 'VERY_HIGH'
+            }))
+          }
+          className="w-full rounded border p-2"
+          required
+        >
+          <option value="NONE">Không</option>
+          <option value="VERY_LOW">Rất thấp</option>
+          <option value="LOW">Thấp</option>
+          <option value="MEDIUM">Trung bình</option>
+          <option value="HIGH">Cao</option>
+          <option value="VERY_HIGH">Rất cao</option>
+        </select>
+      </div>
+
+      {/* Duyệt nội dung */}
+      <div className="mb-3">
+        <label className="mb-1 block text-sm font-medium">
+          Duyệt nội dung <span className="text-red-500">*</span>
+        </label>
+        <select
+          value={newPlant.approved_content ? "true" : "false"}
+          onChange={e =>
+            setNewPlant(prev => ({
+              ...prev,
+              approved_content: e.target.value === "true"
+            }))
+          }
+          className="w-full rounded border p-2"
+          required
+        >
+          <option value="true">Đã duyệt</option>
+          <option value="false">Chưa duyệt</option>
+        </select>
+      </div>
+
+      {/* Nút lưu và hủy */}
+      <div className="flex gap-2">
+        <button
+          type="submit"
+          className="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
+        >
+          Lưu
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowForm(false)}
+          className="rounded bg-gray-500 px-4 py-2 text-white hover:bg-gray-600"
+        >
+          Hủy
+        </button>
+      </div>
+    </form>
+  </div>
+)};
 
       <Table
         data={plants}
