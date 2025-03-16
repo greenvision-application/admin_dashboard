@@ -28,7 +28,7 @@ export const getUserById = async (userId: string): Promise<Users> => {
 };
 
 // Tạo user mới
-export const createUser = async (userData) => {
+export const createUser = async (userData: Omit<Users, 'id'>) => {
   try {
     const response = await fetch(`${API_URL}/users`, {
       method: 'POST',
@@ -45,7 +45,7 @@ export const createUser = async (userData) => {
     }
 
     return result;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Lỗi API createUser:', error.message);
     throw new Error(error.message);
   }
