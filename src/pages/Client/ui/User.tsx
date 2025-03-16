@@ -9,6 +9,9 @@ import {
 } from '../../../services/userService';
 import { getRoles } from '../../../services/roleService';
 import { Role } from '../../../types/Model';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Swal from 'sweetalert2';
 
 // Định nghĩa interface dựa trên dữ liệu API thực tế
 interface UserTable {
@@ -90,15 +93,45 @@ const UserList: React.FC = () => {
     fetchUsers();
   }, []);
 
-  const handleDisable = (id: string) => {
-    if (window.confirm('Bạn có chắc muốn vô hiệu hóa tài khoản này không?')) {
-      setUserData(prev =>
-        prev.map(user =>
-          user.id === id ? { ...user, is_active: false } : user
-        )
-      );
-    }
-  };
+const handleDisable = async (id: string) => {
+  const result = await Swal.fire({
+    title: 'Xác nhận vô hiệu hóa',
+    text: 'Bạn có chắc muốn vô hiệu hóa tài khoản này không?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#d33',
+    cancelButtonColor: '#3085d6',
+    confirmButtonText: 'Vô hiệu hóa',
+    cancelButtonText: 'Hủy',
+  });
+  if (result.isConfirmed) {
+
+  try {
+    await updateUser(id, { is_active: false });
+
+    // Cập nhật danh sách user trong state
+    setUserData(prev =>
+      prev.map(user =>
+        user.id === id ? { ...user, is_active: false } : user
+      )
+    );
+
+    // Hiển thị thông báo thành công
+    toast.success('Tài khoản đã được vô hiệu hóa!', {
+      position: 'top-right',
+      autoClose: 3000,
+    });
+  } catch (error) {
+    console.error('Lỗi khi vô hiệu hóa tài khoản:', error);
+    toast.error('Không thể vô hiệu hóa tài khoản. Vui lòng thử lại.', {
+      position: 'top-right',
+      autoClose: 3000,
+    });
+  }
+}
+};
+
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -149,6 +182,7 @@ const UserList: React.FC = () => {
               : user
           )
         );
+        toast.success('Cập nhật người dùng thành công!');
       } else {
         // 🆕 Tạo user mới (Gọi API createUser)
         console.log('User Payload trước khi gửi API:', userPayload); // 🛠 Kiểm tra dữ liệu
@@ -164,12 +198,22 @@ const UserList: React.FC = () => {
           }
         ]);
       }
+      toast.success('Thêm người dùng thành công!');
 
       setShowForm(false);
-      resetUserForm();
+      setNewUser({
+        id: '',
+        username: '',
+        email: '',
+        role_id: '',
+        password: '',
+        ward: '',
+        district: '',
+        province: ''
+      });
     } catch (error) {
       console.error('Lỗi khi cập nhật user:', error);
-      alert(error.message);
+      toast.error(error.message);
     }
   };
 
