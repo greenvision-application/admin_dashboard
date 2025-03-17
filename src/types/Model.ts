@@ -44,6 +44,9 @@ export interface Plant {
     | 'HIGH'
     | 'VERY_HIGH'; // Mức độ ánh sáng theo ENUM LEVEL
     approved_content: boolean; // Xác nhận nội dung
+    Category:{
+      category_name: string
+    }
 }
 
 export interface Users {
