@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react';
+import React from "react";
 import { Table } from '../../../components';
 import type { ActionColumn } from '../../../components';
 import { plantService } from '../../../services/plantService';
 import { Plant, Category } from '../../../types/Model';
 import {categoryService} from '../../../services/categoryService';
+import { CircleCheckBig, CirclePlus, CircleX } from 'lucide-react';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Swal from 'sweetalert2';
 
 
 interface PlantTable {
@@ -90,8 +95,13 @@ const PlantsManagement: React.FC = () => {
           plantService.getPlants(),
           categoryService.getAllCategories()
         ]);
-  
-        setPlants(plants);
+        // Sắp xếp dữ liệu theo approved_content (true hiện trước)
+      const sortedPlants = plants.sort((a, b) => {
+        if (a.approved_content === b.approved_content) return 0; // Giữ nguyên thứ tự nếu bằng nhau
+        return a.approved_content ? -1 : 1; // approved_content = true sẽ được đưa lên đầu
+      });
+
+      setPlants(sortedPlants);
         setCategories(categories);
   
         console.log('data cây trồng: ', plants);
@@ -108,6 +118,7 @@ const PlantsManagement: React.FC = () => {
   const handleEdit = (id: string) => {
     // set màn hinh kéo lên đầu trang
     window.scrollTo(0, 0);
+    setIsEdit(true);
 
     const plantToEdit = plants.find(plant => plant.id === id);
     if (plantToEdit) {
@@ -116,7 +127,7 @@ const PlantsManagement: React.FC = () => {
         ...plantToEdit, // Sao chép tất cả thông tin của cây trồng
         category_name: category?.category_name || "",
       });
-      setIsEdit(true); // Đặt trạng thái chỉnh sửa
+       // Đặt trạng thái chỉnh sửa
       setShowForm(true); // Hiển thị form
     }
   };
@@ -127,17 +138,26 @@ const PlantsManagement: React.FC = () => {
   
       const createdPlant = await plantService.createPlant(newPlant);
       console.log("Phản hồi từ API:", createdPlant);
+
+      // Tìm danh mục từ danh sách Categories
+      const category = Categories.find(cat => cat.id === createdPlant.category_id);
+
+      // Thêm thông tin danh mục vào cây trồng mới
+    const plantWithCategory = {
+      ...createdPlant,
+      Category: category || { category_name: "Chưa xác định" }, // Nếu không tìm thấy danh mục
+    };
   
       // Cập nhật state `plants` để hiển thị cây trồng mới trong bảng
-      setPlants(prevPlants => [...prevPlants, createdPlant]);
+      setPlants(prevPlants => [plantWithCategory, ...prevPlants ]);
   
       // Đóng form và reset form
       resetForm();
   
-      alert("Cây trồng đã được thêm thành công!");
+      toast.success("Cây trồng đã được thêm thành công!");
     } catch (error) {
       console.error('Error creating plant:', error);
-      alert("Có lỗi xảy ra khi thêm cây trồng. Vui lòng thử lại!");
+      toast.error("Có lỗi xảy ra khi thêm cây trồng. Vui lòng thử lại!");
     }
   };
   
@@ -171,24 +191,26 @@ const PlantsManagement: React.FC = () => {
       console.log("Phản hồi từ API sau khi cập nhật:", updatedPlant);
   
       // Cập nhật state `plants` để hiển thị cây trồng đã cập nhật
-      setPlants(prevPlants =>
-        prevPlants.map(plant =>
+      const updatedPlants = plants.map(plant =>
           plant.id === updatedPlant.id ? updatedPlant : plant
-        )
-      );
+        );
+      // Sắp xếp lại dữ liệu
+    const sortedPlants = updatedPlants.sort((a, b) => (a.approved_content === b.approved_content ? 0 : a.approved_content ? -1 : 1));
+
+    setPlants(sortedPlants);
   
       // Đóng form và reset form
       resetForm();
   
-      alert("Cây trồng đã được cập nhật thành công!");
+      toast.success("Cây trồng đã được cập nhật thành công!");
     } catch (error) {
       console.error('Error updating plant:', error);
   
       if (error.response) {
         console.error("Phản hồi lỗi từ API:", error.response.data);
-        alert(`Lỗi từ API: ${error.response.data.message || "Vui lòng thử lại!"}`);
+        toast.error(`Lỗi từ API: ${error.response.data.message || "Vui lòng thử lại!"}`);
       } else {
-        alert("Có lỗi xảy ra khi cập nhật cây trồng. Vui lòng thử lại!");
+        toast.error("Có lỗi xảy ra khi cập nhật cây trồng. Vui lòng thử lại!");
       }
     }
   };
@@ -227,10 +249,18 @@ const PlantsManagement: React.FC = () => {
   };
 
   const handleDelete = async (id: string) => {
+    const result = await Swal.fire({
+        title: 'Xác nhận xóa cây trồng',
+        text: 'Bạn có chắc muốn xóa cây trồng này không?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Xác nhận xóa',
+        cancelButtonText: 'Hủy',
+      });
+      if (result.isConfirmed) {
     try {
-      // Xác nhận trước khi xóa
-      const confirmDelete = window.confirm("Bạn có chắc chắn muốn xóa cây trồng này?");
-      if (!confirmDelete) return;
   
       // Gọi API xóa cây trồng
       await plantService.deletePlant(id);
@@ -238,11 +268,12 @@ const PlantsManagement: React.FC = () => {
       // Cập nhật lại danh sách cây trồng sau khi xóa
       setPlants(prevPlants => prevPlants.filter(plant => plant.id !== id));
   
-      alert("Cây trồng đã được xóa thành công!");
+      toast.success("Cây trồng đã được xóa thành công!");
     } catch (error) {
       console.error('Error deleting plant:', error);
-      alert("Có lỗi xảy ra khi xóa cây trồng. Vui lòng thử lại!");
+      toast.error("Có lỗi xảy ra khi xóa cây trồng. Vui lòng thử lại!");
     }
+  }
   };
 
   const plantColumns: PlantColumn[] = [
@@ -253,7 +284,7 @@ const PlantsManagement: React.FC = () => {
         <img
           src={plant.image_url[0] || "/default-image.jpg"}
           alt={plant.plant_name}
-          className="h-20 w-32 rounded-full object-cover"
+          className="!w-32 h-40 rounded-2xl object-cover"
         />
       ),
     },
@@ -262,65 +293,80 @@ const PlantsManagement: React.FC = () => {
     {
       key: "overview",
       title: "Tổng quan",
-      render: (plant: PlantTable) => <span>{plant.overview.join(", ")}</span>,
+      render: (plant: PlantTable) => (
+        <span>
+          {plant.overview.map((item, index) => (
+            <React.Fragment key={index}>
+              {item}
+              <br />
+            </React.Fragment>
+          ))}
+        </span>
+      ),
     },
     {
       key: "characteristic",
       title: "Đặc điểm",
-      render: (plant: PlantTable) => <span>{plant.characteristic.join(", ")}</span>,
+      render: (plant: PlantTable) => (
+        <span>
+          {plant.characteristic.map((item, index) => (
+            <React.Fragment key={index}>
+              {item}
+              <br />
+            </React.Fragment>
+          ))}
+        </span>
+      ),
     },
     {
       key: "function",
       title: "Công dụng",
-      render: (plant: PlantTable) => <span>{plant.function.join(", ")}</span>,
+      render: (plant: PlantTable) => (
+        <span>
+          {plant.function.map((item, index) => (
+            <React.Fragment key={index}>
+              {item}
+              <br />
+            </React.Fragment>
+          ))}
+        </span>
+      ),
     },
     {
       key: "meaning",
       title: "Ý nghĩa",
-      render: (plant: PlantTable) => <span>{plant.meaning.join(", ")}</span>,
-    },
-    { key: "difficulty_level", title: "Độ khó" },
-    { key: "soil_type", title: "Loại đất" },
+      render: (plant: PlantTable) => (
+        <span>
+          {plant.meaning.map((item, index) => (
+            
+            <React.Fragment key={index}>
+              <p className='pb-1'>
+              {item}
+
+              </p>
+              
+            </React.Fragment>
+          ))}
+        </span>
+      ),
+    },    
     {
       key: "category_id",
-      title: "Tên danh mục",
+      title: "Danh mục",
       render: (plant: PlantTable) => (
-        <span>{plant.category_id? plant.Category?.category_name : "Chưa xác định"}</span>
+        <span >{plant.category_id? plant.Category?.category_name : "Chưa xác định"}</span>
       ),
     },
-    { key: "habitatLocation", title: "Vị trí sinh trưởng" },
-    {
-      key: "minTemperature",
-      title: "Nhiệt độ tối thiểu (°C)",
-      render: (plant: PlantTable) => <span>{plant.minTemperature}°C</span>,
-    },
-    {
-      key: "maxTemperature",
-      title: "Nhiệt độ tối đa (°C)",
-      render: (plant: PlantTable) => <span>{plant.maxTemperature}°C</span>,
-    },
-    {
-      key: "minMatureSize",
-      title: "Kích thước tối thiểu (cm)",
-      render: (plant: PlantTable) => <span>{plant.minMatureSize} cm</span>,
-    },
-    {
-      key: "maxMatureSize",
-      title: "Kích thước tối đa (cm)",
-      render: (plant: PlantTable) => <span>{plant.maxMatureSize} cm</span>,
-    },
-    { key: "humidityRange", title: "Độ ẩm" },
-    { key: "lightRequirement", title: "Yêu cầu ánh sáng" },
     {
       key: "approved_content",
       title: "Duyệt nội dung",
       render: (plant: PlantTable) => (
         <span
-          className={`px-2 py-1 rounded ${
-            plant.approved_content ? "bg-green-500 text-white" : "bg-red-500 text-white"
+          className={`px-2 py-1 rounded flex justify-center ${
+            plant.approved_content ? "text-green-700 font-semibold" : "text-red-500 font-semibold"
           }`}
         >
-          {plant.approved_content ? "Đã duyệt" : "Chưa duyệt"}
+          {plant.approved_content ? <CircleCheckBig size={32} /> : <CircleX size={32}/>}
         </span>
       ),
     },
@@ -333,7 +379,7 @@ const PlantsManagement: React.FC = () => {
       {
         label: 'Sửa',
         onClick: plant => handleEdit(plant.id), // Gọi hàm handleEdit
-        className: 'bg-blue-400 hover:bg-blue-600'
+        className: 'bg-blue-400 hover:bg-blue-600 '
       },
       {
         label: 'Xóa',
@@ -349,7 +395,7 @@ const PlantsManagement: React.FC = () => {
         <button
           onClick={() => {
             setShowForm(!showForm);
-            // if (!showForm) resetUserForm();
+            if (isEdit) resetForm();
           }}
           className={`rounded px-4 py-2 text-white ${!showForm ? 'bg-green-500 hover:bg-green-900' : 'bg-red-500 hover:bg-red-400'}`}
         >
