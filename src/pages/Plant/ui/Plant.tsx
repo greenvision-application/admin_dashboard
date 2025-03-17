@@ -226,6 +226,25 @@ const PlantsManagement: React.FC = () => {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    try {
+      // Xác nhận trước khi xóa
+      const confirmDelete = window.confirm("Bạn có chắc chắn muốn xóa cây trồng này?");
+      if (!confirmDelete) return;
+  
+      // Gọi API xóa cây trồng
+      await plantService.deletePlant(id);
+  
+      // Cập nhật lại danh sách cây trồng sau khi xóa
+      setPlants(prevPlants => prevPlants.filter(plant => plant.id !== id));
+  
+      alert("Cây trồng đã được xóa thành công!");
+    } catch (error) {
+      console.error('Error deleting plant:', error);
+      alert("Có lỗi xảy ra khi xóa cây trồng. Vui lòng thử lại!");
+    }
+  };
+
   const plantColumns: PlantColumn[] = [
     {
       key: "image_url",
@@ -318,10 +337,7 @@ const PlantsManagement: React.FC = () => {
       },
       {
         label: 'Xóa',
-        onClick: plant => 
-          // handleDelete(plant.id)
-          {}
-        , 
+        onClick: plant => handleDelete(plant.id), 
         className: 'bg-red-400 hover:bg-red-700'
       }
     ]
