@@ -61,6 +61,7 @@ interface PlantColumn {
 }
 
 const PlantsManagement: React.FC = () => {
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [isEdit, setIsEdit] = useState(false); // Mặc định là false (thêm mới)
   const [Categories, setCategories] = useState<Category[]>([]);
   const [plants, setPlants] = useState<Plant[]>([]);
@@ -114,6 +115,116 @@ const PlantsManagement: React.FC = () => {
 
     fetchData();
   }, []);
+
+  const validateField = (field: string, value: any) => {
+    const newErrors = { ...errors };
+  
+    switch (field) {
+      case 'plant_name':
+        if (!value.trim()) {
+          newErrors.plant_name = 'Tên cây trồng là bắt buộc';
+        } else {
+          delete newErrors.plant_name;
+        }
+        break;
+  
+      case 'scientific_name':
+        if (!value.trim()) {
+          newErrors.scientific_name = 'Tên khoa học là bắt buộc';
+        } else {
+          delete newErrors.scientific_name;
+        }
+        break;
+  
+      case 'image_url':
+        if (value.length === 0) {
+          newErrors.image_url = 'Hình ảnh là bắt buộc';
+        } else {
+          delete newErrors.image_url;
+        }
+        break;
+  
+      case 'overview':
+        if (value.length === 0) {
+          newErrors.overview = 'Mô tả tổng quan là bắt buộc';
+        } else {
+          delete newErrors.overview;
+        }
+        break;
+  
+      case 'category_id':
+        if (!value) {
+          newErrors.category_id = 'Danh mục là bắt buộc';
+        } else {
+          delete newErrors.category_id;
+        }
+        break;
+  
+      case 'minTemperature':
+        if (value < 0 || value > 100) {
+          newErrors.minTemperature = 'Nhiệt độ tối thiểu phải từ 0 đến 100°C';
+        } else {
+          delete newErrors.minTemperature;
+        }
+        break;
+  
+      case 'maxTemperature':
+        if (value < 0 || value > 100) {
+          newErrors.maxTemperature = 'Nhiệt độ tối đa phải từ 0 đến 100°C';
+        } else {
+          delete newErrors.maxTemperature;
+        }
+        break;
+  
+      // Thêm các trường khác tương tự
+      default:
+        break;
+    }
+  
+    setErrors(newErrors);
+  };
+
+  const handleInputChange = (field: string, value: any) => {
+    setNewPlant((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  
+    // Validate real-time
+    validateField(field, value);
+  };
+
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+  
+    // Kiểm tra từng trường
+    if (!newPlant.plant_name.trim()) {
+      newErrors.plant_name = 'Tên cây trồng là bắt buộc';
+    }
+    if (!newPlant.scientific_name.trim()) {
+      newErrors.scientific_name = 'Tên khoa học là bắt buộc';
+    }
+    if (newPlant.image_url.length === 0) {
+      newErrors.image_url = 'Hình ảnh là bắt buộc';
+    }
+    if (newPlant.overview.length === 0) {
+      newErrors.overview = 'Mô tả tổng quan là bắt buộc';
+    }
+    if (!newPlant.category_id) {
+      newErrors.category_id = 'Danh mục là bắt buộc';
+    }
+    if (newPlant.minTemperature < 0 || newPlant.minTemperature > 100) {
+      newErrors.minTemperature = 'Nhiệt độ tối thiểu phải từ 0 đến 100°C';
+    }
+    if (newPlant.maxTemperature < 0 || newPlant.maxTemperature > 100) {
+      newErrors.maxTemperature = 'Nhiệt độ tối đa phải từ 0 đến 100°C';
+    }
+  
+    setErrors(newErrors);
+  
+    // Trả về true nếu không có lỗi
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleEdit = (id: string) => {
     // set màn hinh kéo lên đầu trang
@@ -255,7 +366,15 @@ const PlantsManagement: React.FC = () => {
     setShowForm(false); // Đóng form
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+  // Kiểm tra form trước khi submit
+  if (!validateForm()) {
+    console.log('Validation failed');
+    return;
+  }
+
     if (isEdit) {
       await handleUpdatePlant(); // Cập nhật nếu đang ở chế độ chỉnh sửa
     } else {
@@ -396,12 +515,14 @@ const PlantsManagement: React.FC = () => {
       {
         label: 'Sửa',
         onClick: plant => handleEdit(plant.id), // Gọi hàm handleEdit
-        className: 'bg-blue-400 hover:bg-blue-600 '
+        className: 'bg-blue-400 hover:bg-blue-600 ',
+        id: plant => `update-btn-${plant.id}`
       },
       {
         label: 'Xóa',
         onClick: plant => handleDelete(plant.id),
-        className: 'bg-red-400 hover:bg-red-700'
+        className: 'bg-red-400 hover:bg-red-700',
+        id: plant => `delete-btn-${plant.id}`
       }
     ]
   };
@@ -412,6 +533,7 @@ const PlantsManagement: React.FC = () => {
         <button
           onClick={() => {
             setShowForm(!showForm);
+            setErrors({});
             if (isEdit) resetForm();
           }}
           className={`rounded px-4 py-2 text-white ${!showForm ? 'bg-green-500 hover:bg-green-900' : 'bg-red-500 hover:bg-red-400'}`}
@@ -427,7 +549,7 @@ const PlantsManagement: React.FC = () => {
           <form
             onSubmit={e => {
               e.preventDefault();
-              handleSubmit();
+              handleSubmit(e);
             }}
           >
             {/* Tên cây trồng */}
@@ -436,17 +558,16 @@ const PlantsManagement: React.FC = () => {
                 Tên cây trồng <span className="text-red-500">*</span>
               </label>
               <input
+              id='input-plant_name'
                 type="text"
                 value={newPlant.plant_name}
-                onChange={e =>
-                  setNewPlant(prev => ({
-                    ...prev,
-                    plant_name: e.target.value
-                  }))
-                }
+                onChange={(e) => handleInputChange('plant_name', e.target.value)}
                 className="w-full rounded border p-2"
-                required
+                
               />
+              {errors.plant_name && (
+      <p className="mt-1 text-sm text-red-500">{errors.plant_name}</p>
+    )}
             </div>
 
             {/* Tên khoa học */}
@@ -455,17 +576,16 @@ const PlantsManagement: React.FC = () => {
                 Tên khoa học <span className="text-red-500">*</span>
               </label>
               <input
+              id='input-scientific_name'
                 type="text"
                 value={newPlant.scientific_name}
-                onChange={e =>
-                  setNewPlant(prev => ({
-                    ...prev,
-                    scientific_name: e.target.value
-                  }))
-                }
+                onChange={(e) => handleInputChange('scientific_name', e.target.value)}
                 className="w-full rounded border p-2"
-                required
+                 
               />
+              {errors.scientific_name && (
+      <p className="mt-1 text-sm text-red-500">{errors.scientific_name}</p>
+    )}
             </div>
 
             {/* URL hình ảnh */}
@@ -475,17 +595,16 @@ const PlantsManagement: React.FC = () => {
                 <span className="text-red-500">*</span>
               </label>
               <input
+                id='input-image_url'
                 type="text"
                 value={newPlant.image_url.join(', ')}
-                onChange={e =>
-                  setNewPlant(prev => ({
-                    ...prev,
-                    image_url: e.target.value.split(', ')
-                  }))
-                }
+                onChange={(e) => handleInputChange('image_url', e.target.value)}
                 className="w-full rounded border p-2"
                 
               />
+              {errors.image_url && (
+      <p className="mt-1 text-sm text-red-500">{errors.image_url}</p>
+    )}
             </div>
 
             {/* Mô tả tổng quan */}
@@ -495,17 +614,16 @@ const PlantsManagement: React.FC = () => {
                 <span className="text-red-500">*</span>
               </label>
               <input
+              id='input-overview'
                 type="text"
                 value={newPlant.overview.join(', ')}
-                onChange={e =>
-                  setNewPlant(prev => ({
-                    ...prev,
-                    overview: e.target.value.split(', ')
-                  }))
-                }
+                onChange={(e) => handleInputChange('overview', e.target.value)}
                 className="w-full rounded border p-2"
-                required
+                 
               />
+              {errors.overview && (
+      <p className="mt-1 text-sm text-red-500">{errors.overview}</p>    
+    )}
             </div>
 
             {/* Đặc điểm */}
@@ -515,17 +633,16 @@ const PlantsManagement: React.FC = () => {
                 <span className="text-red-500">*</span>
               </label>
               <input
+              id='input-characteristic'
                 type="text"
                 value={newPlant.characteristic.join(', ')}
-                onChange={e =>
-                  setNewPlant(prev => ({
-                    ...prev,
-                    characteristic: e.target.value.split(', ')
-                  }))
-                }
+                onChange={(e) => handleInputChange('characteristic', e.target.value)}
                 className="w-full rounded border p-2"
-                required
+                 
               />
+              {errors.characteristic && (
+      <p className="mt-1 text-sm text-red-500">{errors.characteristic}</p>
+    )}
             </div>
 
             {/* Công dụng */}
@@ -535,17 +652,16 @@ const PlantsManagement: React.FC = () => {
                 <span className="text-red-500">*</span>
               </label>
               <input
+              id='input-function'
                 type="text"
                 value={newPlant.function.join(', ')}
-                onChange={e =>
-                  setNewPlant(prev => ({
-                    ...prev,
-                    function: e.target.value.split(', ')
-                  }))
-                }
+                onChange={(e) => handleInputChange('function', e.target.value)}
                 className="w-full rounded border p-2"
-                required
+                 
               />
+              {errors.function && ( 
+      <p className="mt-1 text-sm text-red-500">{errors.function}</p>
+    )}
             </div>
 
             {/* Ý nghĩa */}
@@ -555,17 +671,16 @@ const PlantsManagement: React.FC = () => {
                 <span className="text-red-500">*</span>
               </label>
               <input
+              id='input-meaning'
                 type="text"
                 value={newPlant.meaning.join(', ')}
-                onChange={e =>
-                  setNewPlant(prev => ({
-                    ...prev,
-                    meaning: e.target.value.split(', ')
-                  }))
-                }
+                onChange={(e) => handleInputChange('meaning', e.target.value)}
                 className="w-full rounded border p-2"
-                required
+                 
               />
+              {errors.meaning && (
+      <p className="mt-1 text-sm text-red-500">{errors.meaning}</p>
+    )}
             </div>
 
             {/* Mức độ khó */}
@@ -574,8 +689,9 @@ const PlantsManagement: React.FC = () => {
                 Mức độ khó <span className="text-red-500">*</span>
               </label>
               <select
+              id='input-difficulty_level'
                 value={newPlant.difficulty_level}
-                onChange={e =>
+                onChange={(e) =>{
                   setNewPlant(prev => ({
                     ...prev,
                     difficulty_level: e.target.value as
@@ -584,10 +700,11 @@ const PlantsManagement: React.FC = () => {
                       | 'HARD'
                       | 'VERY_HARD'
                       | 'EXTREME'
-                  }))
-                }
+                  }));
+                  validateField('difficulty_level', e.target.value);
+                }}
                 className="w-full rounded border p-2"
-                required
+                 
               >
                 <option value="EASY">Dễ</option>
                 <option value="MEDIUM">Trung bình</option>
@@ -595,6 +712,9 @@ const PlantsManagement: React.FC = () => {
                 <option value="VERY_HARD">Rất khó</option>
                 <option value="EXTREME">Cực kỳ khó</option>
               </select>
+              {errors.difficulty_level && (
+      <p className="mt-1 text-sm text-red-500">{errors.difficulty_level}</p>
+    )}
             </div>
 
             {/* Loại đất */}
@@ -603,8 +723,9 @@ const PlantsManagement: React.FC = () => {
                 Loại đất <span className="text-red-500">*</span>
               </label>
               <select
+              id='input-soil_type'
                 value={newPlant.soil_type}
-                onChange={e =>
+                onChange={e =>{
                   setNewPlant(prev => ({
                     ...prev,
                     soil_type: e.target.value as
@@ -614,10 +735,11 @@ const PlantsManagement: React.FC = () => {
                       | 'PEAT'
                       | 'CHALK'
                       | 'LOAM'
-                  }))
-                }
+                  }));
+                  validateField('soil_type', e.target.value);
+                }}
                 className="w-full rounded border p-2"
-                required
+                 
               >
                 <option value="SANDY">Đất cát</option>
                 <option value="CLAY">Đất sét</option>
@@ -626,6 +748,9 @@ const PlantsManagement: React.FC = () => {
                 <option value="CHALK">Đất phấn</option>
                 <option value="LOAM">Đất thịt</option>
               </select>
+              {errors.soil_type && (
+      <p className="mt-1 text-sm text-red-500">{errors.soil_type}</p>
+    )}
             </div>
 
             {/* Danh mục */}
@@ -634,15 +759,17 @@ const PlantsManagement: React.FC = () => {
                 Danh mục <span className="text-red-500">*</span>
               </label>
               <select
+              id='input-category_id'
                 value={newPlant.category_id}
-                onChange={e =>
+                onChange={e =>{
                   setNewPlant(prev => ({
                     ...prev,
                     category_id: e.target.value
-                  }))
-                }
+                  }));
+                  validateField('category_id', e.target.value);
+                }}
                 className="w-full rounded border p-2"
-                required
+                 
               >
                 <option value="">Chọn danh mục</option>
                 {Categories.map(category => (
@@ -651,6 +778,9 @@ const PlantsManagement: React.FC = () => {
                   </option>
                 ))}
               </select>
+              {errors.category_id && (
+                  <p className="mt-1 text-sm text-red-500">{errors.category_id}</p>
+                )}
             </div>
 
             {/* Vị trí sinh trưởng */}
@@ -659,8 +789,9 @@ const PlantsManagement: React.FC = () => {
                 Vị trí sinh trưởng <span className="text-red-500">*</span>
               </label>
               <select
+                id='input-habitatLocation'
                 value={newPlant.habitatLocation}
-                onChange={e =>
+                onChange={e =>{
                   setNewPlant(prev => ({
                     ...prev,
                     habitatLocation: e.target.value as
@@ -676,10 +807,11 @@ const PlantsManagement: React.FC = () => {
                       | 'OFFICE'
                       | 'HYDROPONICS'
                       | 'WALL_PLANTER'
-                  }))
-                }
+                  }));
+                  validateField('habitatLocation', e.target.value);
+                }}
                 className="w-full rounded border p-2"
-                required
+                 
               >
                 <option value="INDOOR">Trong nhà</option>
                 <option value="OUTDOOR">Ngoài trời</option>
@@ -694,6 +826,9 @@ const PlantsManagement: React.FC = () => {
                 <option value="HYDROPONICS">Thủy canh</option>
                 <option value="WALL_PLANTER">Chậu treo tường</option>
               </select>
+              {errors.habitatLocation && (
+                  <p className="mt-1 text-sm text-red-500">{errors.habitatLocation}</p>
+                )}
             </div>
 
             {/* Nhiệt độ tối thiểu và tối đa */}
@@ -703,41 +838,48 @@ const PlantsManagement: React.FC = () => {
               </label>
               <div className="flex gap-2">
                 <input
+                  id='input-minTemperature'
                   type="number"
                   value={newPlant.minTemperature}
-                  onChange={e => {
+                  onChange={(e) => {
                     const value = Number(e.target.value);
-                    if (value >= 0 && value <= 100) {
-                      setNewPlant(prev => ({
-                        ...prev,
-                        minTemperature: value
-                      }));
-                    }
+                    setNewPlant((prev) => ({
+                      ...prev,
+                      minTemperature: value,
+                    }));
+                    validateField('minTemperature', value); // Gọi validation
                   }}
                   min={0}
                   max={100}
                   className="w-1/2 rounded border p-2"
                   placeholder="Tối thiểu"
-                  required
+                   
                 />
+                {errors.minTemperature && (
+      <p className="mt-1 text-sm text-red-500">{errors.minTemperature}</p>
+    )}
+                
                 <input
+                  id='input-maxTemperature'
                   type="number"
                   value={newPlant.maxTemperature}
-                  onChange={e => {
+                  onChange={(e) => {
                     const value = Number(e.target.value);
-                    if (value >= 0 && value <= 100) {
-                      setNewPlant(prev => ({
-                        ...prev,
-                        maxTemperature: value
-                      }));
-                    }
+                    setNewPlant((prev) => ({
+                      ...prev,
+                      maxTemperature: value,
+                    }));
+                    validateField('maxTemperature', value); // Gọi validation
                   }}
                   min={0}
                   max={100}
                   className="w-1/2 rounded border p-2"
                   placeholder="Tối đa"
-                  required
+                   
                 />
+                {errors.maxTemperature && (
+      <p className="mt-1 text-sm text-red-500">{errors.maxTemperature}</p>
+    )}
               </div>
             </div>
 
@@ -749,31 +891,29 @@ const PlantsManagement: React.FC = () => {
               </label>
               <div className="flex gap-2">
                 <input
+                  id='input-minMatureSize'
                   type="number"
                   value={newPlant.minMatureSize}
-                  onChange={e =>
-                    setNewPlant(prev => ({
-                      ...prev,
-                      minMatureSize: Number(e.target.value)
-                    }))
-                  }
+                  onChange={(e) => handleInputChange('minMatureSize', e.target.value)}
                   className="w-1/2 rounded border p-2"
                   placeholder="Tối thiểu"
-                  required
+                   
                 />
+                {errors.minMatureSize && (
+      <p className="mt-1 text-sm text-red-500">{errors.minMatureSize}</p>
+    )}
                 <input
+                  id='input-maxMatureSize'
                   type="number"
                   value={newPlant.maxMatureSize}
-                  onChange={e =>
-                    setNewPlant(prev => ({
-                      ...prev,
-                      maxMatureSize: Number(e.target.value)
-                    }))
-                  }
+                  onChange={(e) => handleInputChange('maxMatureSize', e.target.value)}
                   className="w-1/2 rounded border p-2"
                   placeholder="Tối đa"
-                  required
+                   
                 />
+                {errors.maxMatureSize && (
+      <p className="mt-1 text-sm text-red-500">{errors.maxMatureSize}</p>
+    )}
               </div>
             </div>
 
@@ -783,8 +923,9 @@ const PlantsManagement: React.FC = () => {
                 Độ ẩm <span className="text-red-500">*</span>
               </label>
               <select
+              id='input-humidityRange'
                 value={newPlant.humidityRange}
-                onChange={e =>
+                onChange={e =>{
                   setNewPlant(prev => ({
                     ...prev,
                     humidityRange: e.target.value as
@@ -794,10 +935,11 @@ const PlantsManagement: React.FC = () => {
                       | 'MEDIUM'
                       | 'HIGH'
                       | 'VERY_HIGH'
-                  }))
-                }
+                  }));
+                  validateField('humidityRange', e.target.value);
+                }}
                 className="w-full rounded border p-2"
-                required
+                 
               >
                 <option value="NONE">Không</option>
                 <option value="VERY_LOW">Rất thấp</option>
@@ -806,6 +948,9 @@ const PlantsManagement: React.FC = () => {
                 <option value="HIGH">Cao</option>
                 <option value="VERY_HIGH">Rất cao</option>
               </select>
+              {errors.humidityRange && (
+                  <p className="mt-1 text-sm text-red-500">{errors.humidityRange}</p>
+                )}
             </div>
 
             {/* Yêu cầu ánh sáng */}
@@ -814,8 +959,9 @@ const PlantsManagement: React.FC = () => {
                 Yêu cầu ánh sáng <span className="text-red-500">*</span>
               </label>
               <select
+              id='input-lightRequirement'
                 value={newPlant.lightRequirement}
-                onChange={e =>
+                onChange={e =>{
                   setNewPlant(prev => ({
                     ...prev,
                     lightRequirement: e.target.value as
@@ -825,10 +971,11 @@ const PlantsManagement: React.FC = () => {
                       | 'MEDIUM'
                       | 'HIGH'
                       | 'VERY_HIGH'
-                  }))
-                }
+                  }));
+                  validateField('lightRequirement', e.target.value);
+                }}
                 className="w-full rounded border p-2"
-                required
+                 
               >
                 <option value="NONE">Không</option>
                 <option value="VERY_LOW">Rất thấp</option>
@@ -837,6 +984,9 @@ const PlantsManagement: React.FC = () => {
                 <option value="HIGH">Cao</option>
                 <option value="VERY_HIGH">Rất cao</option>
               </select>
+              {errors.lightRequirement && (
+                  <p className="mt-1 text-sm text-red-500">{errors.lightRequirement}</p>
+                )}
             </div>
 
             {/* Duyệt nội dung */}
@@ -845,30 +995,31 @@ const PlantsManagement: React.FC = () => {
                 Duyệt nội dung <span className="text-red-500">*</span>
               </label>
               <select
+              id='input-approvedContent'
                 value={newPlant.approved_content ? 'true' : 'false'}
-                onChange={e =>
-                  setNewPlant(prev => ({
-                    ...prev,
-                    approved_content: e.target.value === 'true'
-                  }))
-                }
+                onChange={(e) => handleInputChange('approved_content', e.target.value)}
                 className="w-full rounded border p-2"
-                required
+                 
               >
                 <option value="true">Đã duyệt</option>
                 <option value="false">Chưa duyệt</option>
               </select>
+              {errors.approved_content && (
+                  <p className="mt-1 text-sm text-red-500">{errors.approved_content}</p>
+              )}
             </div>
 
             {/* Nút lưu và hủy */}
             <div className="flex gap-2">
               <button
+              id='btn-save'
                 type="submit"
                 className="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
               >
                 {isEdit ? 'Cập nhật' : 'Lưu'}
               </button>
               <button
+              id='btn-cancel'
                 type="button"
                 onClick={resetForm} // Gọi resetForm khi nhấn hủy
                 className="rounded bg-gray-500 px-4 py-2 text-white hover:bg-gray-600"
