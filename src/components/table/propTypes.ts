@@ -8,6 +8,7 @@ interface Action<T> {
   label: string;
   onClick: (item: T) => void;
   className?: string;
+  id?: (item:T) =>string | undefined
 }
 
 interface ActionColumn<T> {

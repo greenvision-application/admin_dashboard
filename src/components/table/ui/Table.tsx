@@ -35,13 +35,14 @@ const Table = <T,>({
               {actionColumn && (
                 <td className="space-x-2 p-3 align-top">
                   {actionColumn.actions.map(action => (
-                    <button
+                    <button                      
                       type="button"
                       key={action.label}
                       onClick={() => action.onClick(item)}
                       className={`rounded-md px-2 py-2 m-2 ${
                         action.className || ''
                       }`}
+                      id={action.id ? action.id(item) : undefined}
                     >
                       {action.label}
                     </button>

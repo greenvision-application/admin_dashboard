@@ -42,6 +42,7 @@ interface UserColumn {
 }
 
 const UserList: React.FC = () => {
+  const [errors, setErrors] = useState<Record<string, string>>({});
   //update
   const [edit, setEdit] = useState(false);
   //roles
@@ -95,6 +96,70 @@ const UserList: React.FC = () => {
     fetchUsers();
   }, []);
 
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+  
+    // Validate username
+    if (!newUser.username.trim()) {
+      newErrors.username = 'Tên người dùng là bắt buộc';
+    }
+  
+    // Validate email
+    if (!newUser.email.trim()) {
+      newErrors.email = 'Email là bắt buộc';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newUser.email)) {
+      newErrors.email = 'Email không hợp lệ';
+    }
+  
+    // Validate password (chỉ khi tạo mới)
+    if (!edit && !newUser.password.trim()) {
+      newErrors.password = 'Mật khẩu là bắt buộc';
+    } else if (!edit && newUser.password.length < 8) {
+      newErrors.password = 'Mật khẩu phải có ít nhất 8 ký tự';
+    }
+  
+    // Validate role
+    if (!newUser.role_id) {
+      newErrors.role_id = 'Vai trò là bắt buộc';
+    }
+  
+    // Validate province
+    if (!newUser.province) {
+      newErrors.province = 'Tỉnh/Thành phố là bắt buộc';
+    }
+  
+    // Validate district (chỉ khi đã chọn tỉnh)
+    if (newUser.province && !newUser.district) {
+      newErrors.district = 'Quận/Huyện là bắt buộc';
+    }
+  
+    // Validate ward (chỉ khi đã chọn huyện)
+    if (newUser.district && !newUser.ward) {
+      newErrors.ward = 'Phường/Xã là bắt buộc';
+    }
+  
+    // Set errors
+    setErrors(newErrors);
+  
+    // Return true if no errors
+    return Object.keys(newErrors).length === 0;
+  };
+
+const handleInputChange = (field: string, value: string) => {
+  setNewUser((prev) => ({
+    ...prev,
+    [field]: value,
+  }));
+
+  // Reset error for the field
+  if (errors[field]) {
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [field]: '',
+    }));
+  }
+};
+
 const handleDisable = async (id: string) => {
   const result = await Swal.fire({
     title: 'Xác nhận vô hiệu hóa',
@@ -133,10 +198,13 @@ const handleDisable = async (id: string) => {
 }
 };
 
-  
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+     // Validate form
+  if (!validateForm()) {
+    return; // Stop if there are errors
+  }
 
     const selectedProvince = provinces.find(
       p => p.code === Number(newUser.province)
@@ -268,12 +336,14 @@ const handleDisable = async (id: string) => {
       {
         label: 'Vô hiệu hóa tài khoản',
         onClick: user => handleDisable(user.id),
-        className: 'bg-red-400 hover:bg-red-800'
+        className: 'bg-red-400 hover:bg-red-800',
+        id: user => `disable-btn-${user.id}`
       },
       {
         label: 'Chỉnh sửa thông tin',
         onClick: user => handleEditUser(user),
-        className: 'bg-green-500 hover:bg-green-400'
+        className: 'bg-green-500 hover:bg-green-400',
+        id: user => `edit-btn-${user.id}`
       }
     ]
   };
@@ -335,6 +405,13 @@ const handleDisable = async (id: string) => {
     });
     setDistricts(selectedProvince ? selectedProvince.districts : []);
     setWards([]);
+    // Reset errors
+  if (errors.province) {
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      province: '',
+    }));
+  }
   };
 
   const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -343,6 +420,13 @@ const handleDisable = async (id: string) => {
 
     setNewUser({ ...newUser, district: districtCode.toString(), ward: '' });
     setWards(selectedDistrict ? selectedDistrict.wards : []);
+    // Reset errors
+  if (errors.district) {
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      district: '',
+    }));
+  }
   };
   const resetUserForm = () => {
     if (edit) {
@@ -362,6 +446,7 @@ const handleDisable = async (id: string) => {
       setEdit(false);
     }
   };
+
 
   return (
     <>
@@ -394,12 +479,13 @@ const handleDisable = async (id: string) => {
               id="input-username"
                 type="text"
                 value={newUser.username}
-                onChange={e =>
-                  setNewUser({ ...newUser, username: e.target.value })
-                }
+                onChange={(e) => handleInputChange('username', e.target.value)}
                 className="w-full rounded border p-2"
                 required
               />
+              {errors.username && (
+    <p className="text-red-500 text-sm mt-1">{errors.username}</p>
+  )}
             </div>
             <div className="mb-3">
               <label className="mb-1 block text-sm font-medium">
@@ -409,12 +495,13 @@ const handleDisable = async (id: string) => {
               id="input-email"
                 type="email"
                 value={newUser.email}
-                onChange={e =>
-                  setNewUser({ ...newUser, email: e.target.value })
-                }
+                onChange={(e) => handleInputChange('email', e.target.value)}
                 className="w-full rounded border p-2"
                 required
               />
+              {errors.email && (
+  <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+)}
             </div>
             {!edit && (
               <div className="mb-3">
@@ -425,13 +512,14 @@ const handleDisable = async (id: string) => {
                 id="input-password"
                   type="password"
                   value={newUser.password}
-                  onChange={e =>
-                    setNewUser({ ...newUser, password: e.target.value })
-                  }
+                  onChange={(e) => handleInputChange('password', e.target.value)}
                   className="w-full rounded border p-2"
                   minLength={8}
                   required
                 />
+                {errors.password && (
+  <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+)}
               </div>
             )}
             <div className="mb-3">
@@ -452,6 +540,9 @@ const handleDisable = async (id: string) => {
                   </option>
                 ))}
               </select>
+              {errors.province  && (
+  <p className="text-red-500 text-sm mt-1">{errors.province }</p>
+)}
             </div>
 
             <div className="mb-3">
@@ -459,6 +550,7 @@ const handleDisable = async (id: string) => {
                 Quận/Huyện <span className="text-red-500">*</span>
               </label>
               <select
+                id="select-district"
                 value={newUser.district}
                 onChange={handleDistrictChange}
                 className="w-full rounded border p-2"
@@ -472,6 +564,9 @@ const handleDisable = async (id: string) => {
                   </option>
                 ))}
               </select>
+              {errors.district  && (
+  <p className="text-red-500 text-sm mt-1">{errors.district }</p>
+)}
             </div>
 
             <div className="mb-3">
@@ -481,7 +576,7 @@ const handleDisable = async (id: string) => {
               <select
                id="select-ward"
                 value={newUser.ward}
-                onChange={e => setNewUser({ ...newUser, ward: e.target.value })}
+                onChange={(e) => handleInputChange('ward', e.target.value)}
                 className="w-full rounded border p-2"
                 required
                 disabled={!newUser.district}
@@ -493,6 +588,9 @@ const handleDisable = async (id: string) => {
                   </option>
                 ))}
               </select>
+              {errors.ward  && (
+  <p className="text-red-500 text-sm mt-1">{errors.ward }</p>
+)}
             </div>
 
             {/* Dropdown chọn vai trò */}
@@ -517,6 +615,9 @@ const handleDisable = async (id: string) => {
                   </option>
                 ))}
               </select>
+              {errors.role_id && (
+  <p className="text-red-500 text-sm mt-1">{errors.role_id}</p>
+)}
             </div>
             <div className="flex gap-2">
               <button
