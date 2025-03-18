@@ -169,20 +169,94 @@ const UserList: React.FC = () => {
     // Return true if no errors
     return Object.keys(newErrors).length === 0;
   };
+// validate realtime
+  const validateField = (field: string, value: string) => {
+    const newErrors = { ...errors };
+  
+    switch (field) {
+      case 'username':
+        if (!value.trim()) {
+          newErrors.username = 'Tên người dùng là bắt buộc';
+        } else {
+          delete newErrors.username;
+        }
+        break;
+  
+      case 'email':
+        if (!value.trim()) {
+          newErrors.email = 'Email là bắt buộc';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          newErrors.email = 'Email không hợp lệ';
+        } else {
+          delete newErrors.email;
+        }
+        break;
+  
+      case 'password':
+        if (!edit && !value.trim()) {
+          newErrors.password = 'Mật khẩu là bắt buộc';
+        } else if (!edit && value.length < 8) {
+          newErrors.password = 'Mật khẩu phải có ít nhất 8 ký tự';
+        } else {
+          delete newErrors.password;
+        }
+        break;
+  
+      case 'role_id':
+        if (!value) {
+          newErrors.role_id = 'Vai trò là bắt buộc';
+        } else {
+          delete newErrors.role_id;
+        }
+        break;
+  
+      case 'province':
+        if (!value) {
+          newErrors.province = 'Tỉnh/Thành phố là bắt buộc';
+        } else {
+          delete newErrors.province;
+        }
+        break;
+  
+      case 'district':
+        if (newUser.province && !value) {
+          newErrors.district = 'Quận/Huyện là bắt buộc';
+        } else {
+          delete newErrors.district;
+        }
+        break;
+  
+      case 'ward':
+        if (newUser.district && !value) {
+          newErrors.ward = 'Phường/Xã là bắt buộc';
+        } else {
+          delete newErrors.ward;
+        }
+        break;
+  
+      default:
+        break;
+    }
+  
+    setErrors(newErrors);
+  };
 
   const handleInputChange = (field: string, value: string) => {
-    setNewUser((prev) => ({
+    setNewUser(prev => ({
       ...prev,
-      [field]: value,
+      [field]: value
     }));
-  
+
+    // Validate real-time
+  validateField(field, value);
+
     // Reset error for the field
-    if (errors[field]) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        [field]: '',
-      }));
-    }
+    // if (errors[field]) {
+    //   setErrors(prevErrors => ({
+    //     ...prevErrors,
+    //     [field]: ''
+    //   }));
+    // }
   };
 
   const handleDisable = async (id: string) => {
@@ -222,11 +296,12 @@ const UserList: React.FC = () => {
     }
   };
 
-  const handleSubmit = async () => {
-    // e.preventDefault();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
 
     // Validate form
     if (!validateForm()) {
+      console.log('Errors:', errors);
       return; // Stop if there are errors
     }
 
@@ -433,13 +508,15 @@ const UserList: React.FC = () => {
     });
     setDistricts(selectedProvince ? selectedProvince.districts : []);
     setWards([]);
-    // Reset errors
-    if (errors.province) {
-      setErrors(prevErrors => ({
-        ...prevErrors,
-        province: ''
-      }));
-    }
+    //validate realtime
+    validateField('province', provinceCode.toString());
+    // // Reset errors
+    // if (errors.province) {
+    //   setErrors(prevErrors => ({
+    //     ...prevErrors,
+    //     province: ''
+    //   }));
+    // }
   };
 
   const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -448,13 +525,15 @@ const UserList: React.FC = () => {
 
     setNewUser({ ...newUser, district: districtCode.toString(), ward: '' });
     setWards(selectedDistrict ? selectedDistrict.wards : []);
-    // Reset errors
-    if (errors.district) {
-      setErrors(prevErrors => ({
-        ...prevErrors,
-        district: ''
-      }));
-    }
+    // Validate real-time
+  validateField('district', districtCode.toString());
+    // // Reset errors
+    // if (errors.district) {
+    //   setErrors(prevErrors => ({
+    //     ...prevErrors,
+    //     district: ''
+    //   }));
+    // }
   };
   const resetUserForm = () => {
     if (edit) {
@@ -482,6 +561,7 @@ const UserList: React.FC = () => {
         <button
           onClick={() => {
             setShowForm(!showForm);
+            setErrors({});
             if (!showForm) resetUserForm();
           }}
           className={`rounded px-4 py-2 text-white ${!showForm ? 'bg-green-500 hover:bg-green-900' : 'bg-red-500 hover:bg-red-400'}`}
@@ -509,12 +589,10 @@ const UserList: React.FC = () => {
                 value={newUser.username}
                 onChange={e => handleInputChange('username', e.target.value)}
                 className="w-full rounded border p-2"
-                required
+                 
               />
               {errors.username && (
-                <p id='errors-username' className="mt-1 border text-sm text-red-500">
-                  {errors.username}
-                </p>
+                <p id='error-username' className="mt-1 text-sm text-red-500">{errors.username}</p>
               )}
             </div>
             <div className="mb-3">
@@ -527,10 +605,10 @@ const UserList: React.FC = () => {
                 value={newUser.email}
                 onChange={e => handleInputChange('email', e.target.value)}
                 className="w-full rounded border p-2"
-                required
+                 
               />
               {errors.email && (
-                <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+                <p id='error-email' className="mt-1 text-sm text-red-500">{errors.email}</p>
               )}
             </div>
             {!edit && (
@@ -545,10 +623,10 @@ const UserList: React.FC = () => {
                   onChange={e => handleInputChange('password', e.target.value)}
                   className="w-full rounded border p-2"
                   minLength={8}
-                  required
+                   
                 />
                 {errors.password && (
-                  <p className="mt-1 text-sm text-red-500">{errors.password}</p>
+                  <p id='error-password' className="mt-1 text-sm text-red-500">{errors.password}</p>
                 )}
               </div>
             )}
@@ -561,7 +639,7 @@ const UserList: React.FC = () => {
                 value={newUser.province}
                 onChange={handleProvinceChange}
                 className="w-full rounded border p-2"
-                required
+                 
               >
                 <option value="">Chọn tỉnh/thành phố</option>
                 {provinces.map(province => (
@@ -571,7 +649,7 @@ const UserList: React.FC = () => {
                 ))}
               </select>
               {errors.province && (
-                <p className="mt-1 text-sm text-red-500">{errors.province}</p>
+                <p id='error-province' className="mt-1 text-sm text-red-500">{errors.province}</p>
               )}
             </div>
 
@@ -584,7 +662,7 @@ const UserList: React.FC = () => {
                 value={newUser.district}
                 onChange={handleDistrictChange}
                 className="w-full rounded border p-2"
-                required
+                 
                 disabled={!newUser.province}
               >
                 <option value="">Chọn quận/huyện</option>
@@ -595,7 +673,7 @@ const UserList: React.FC = () => {
                 ))}
               </select>
               {errors.district && (
-                <p className="mt-1 text-sm text-red-500">{errors.district}</p>
+                <p id='error-district' className="mt-1 text-sm text-red-500">{errors.district}</p>
               )}
             </div>
 
@@ -608,7 +686,7 @@ const UserList: React.FC = () => {
                 value={newUser.ward}
                 onChange={e => handleInputChange('ward', e.target.value)}
                 className="w-full rounded border p-2"
-                required
+                 
                 disabled={!newUser.district}
               >
                 <option value="">Chọn phường/xã</option>
@@ -619,7 +697,7 @@ const UserList: React.FC = () => {
                 ))}
               </select>
               {errors.ward && (
-                <p className="mt-1 text-sm text-red-500">{errors.ward}</p>
+                <p id='error-ward' className="mt-1 text-sm text-red-500">{errors.ward}</p>
               )}
             </div>
 
@@ -636,7 +714,7 @@ const UserList: React.FC = () => {
                   setNewUser({ ...newUser, role_id: e.target.value });
                 }}
                 className="w-full rounded border p-2"
-                required
+                 
               >
                 <option value="">Chọn vai trò</option>
                 {roles.map(role => (
@@ -646,7 +724,7 @@ const UserList: React.FC = () => {
                 ))}
               </select>
               {errors.role_id && (
-                <p className="mt-1 text-sm text-red-500">{errors.role_id}</p>
+                <p id='error-role_id' className="mt-1 text-sm text-red-500">{errors.role_id}</p>
               )}
             </div>
             <div className="flex gap-2">
