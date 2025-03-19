@@ -1016,7 +1016,7 @@ const PlantsManagement: React.FC = () => {
                   onChange={e => {
                     let value = Number(e.target.value);
                     // Kiểm tra giá trị nhập vào
-                    if (value < 1 || value > 100) {
+                    if (value < -1 || value > 100) {
                       if (!value) value = 0;
                       toast.error('Kích thước tối thiểu phải từ 1 đến 100 cm');
                       return value; // Dừng lại nếu giá trị không hợp lệ
