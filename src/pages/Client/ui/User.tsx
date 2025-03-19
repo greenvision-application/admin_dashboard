@@ -164,9 +164,6 @@ const UserList: React.FC = () => {
     // Set errors
     setErrors(newErrors);
     console.log('Errors:', newErrors);
-    if (newErrors && Object.keys(newErrors).length > 0) {
-      toast.error(JSON.stringify(newErrors));
-    }
 
     // Return true if no errors
     return Object.keys(newErrors).length === 0;
@@ -241,9 +238,7 @@ const UserList: React.FC = () => {
     }
   
     setErrors(newErrors);
-    if (newErrors && Object.keys(newErrors).length > 0) {
-      toast.error(JSON.stringify(newErrors));
-    }
+    
   };
 
   const handleInputChange = (field: string, value: string) => {

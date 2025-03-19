@@ -233,7 +233,6 @@ const PlantsManagement: React.FC = () => {
       default:
         break;
     }
-
     setErrors(newErrors);
   };
 
@@ -311,10 +310,6 @@ const PlantsManagement: React.FC = () => {
     }
 
     setErrors(newErrors);
-    // chạy obect của new errors sau đó hiển thị lỗi lên toast
-    if (newErrors && Object.keys(newErrors).length > 0) {
-      toast.error(JSON.stringify(newErrors));
-    }
 
     // Trả về true nếu không có lỗi
     return Object.keys(newErrors).length === 0;
