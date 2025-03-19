@@ -312,7 +312,7 @@ const PlantsManagement: React.FC = () => {
 
     setErrors(newErrors);
     // chạy obect của new errors sau đó hiển thị lỗi lên toast
-    if (!newErrors) {
+    if (newErrors && Object.keys(newErrors).length > 0) {
       toast.error(JSON.stringify(newErrors));
     }
 
@@ -1016,7 +1016,7 @@ const PlantsManagement: React.FC = () => {
                   onChange={e => {
                     let value = Number(e.target.value);
                     // Kiểm tra giá trị nhập vào
-                    if (value < -1 || value > 100) {
+                    if (value < 0 || value > 100) {
                       if (!value) value = 0;
                       toast.error('Kích thước tối thiểu phải từ 1 đến 100 cm');
                       return value; // Dừng lại nếu giá trị không hợp lệ
@@ -1042,7 +1042,7 @@ const PlantsManagement: React.FC = () => {
                   onChange={e => {
                     let value = Number(e.target.value);
                     // Kiểm tra giá trị nhập vào
-                    if (value < -1 || value > 20000) {
+                    if (value < 0 || value > 20000) {
                       if (!value) value = 0;
                       toast.error('Kích thước tối đa phải từ 1 đến 20000 cm');
                       return value; // Dừng lại nếu giá trị không hợp lệ
