@@ -161,10 +161,9 @@ const UserList: React.FC = () => {
       newErrors.ward = 'Phường/Xã là bắt buộc';
     }
 
-    console.log('Errors:', newErrors);
-
     // Set errors
     setErrors(newErrors);
+    console.log('Errors:', newErrors);
 
     // Return true if no errors
     return Object.keys(newErrors).length === 0;
@@ -239,6 +238,7 @@ const UserList: React.FC = () => {
     }
   
     setErrors(newErrors);
+    
   };
 
   const handleInputChange = (field: string, value: string) => {
