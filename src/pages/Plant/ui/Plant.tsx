@@ -67,6 +67,7 @@ const PlantsManagement: React.FC = () => {
   const [Categories, setCategories] = useState<Category[]>([]);
   const [plants, setPlants] = useState<Plant[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [selectedPlant, setSelectedPlant] = useState<PlantTable | null>(null);
 
   const [newPlant, setNewPlant] = useState<
@@ -107,11 +108,13 @@ const PlantsManagement: React.FC = () => {
 
         setPlants(sortedPlants);
         setCategories(categories);
+        setLoading(false);
 
         console.log('data cây trồng: ', plants);
         console.log('data danh mục: ', categories);
       } catch (error) {
         console.error('Error fetching data:', error);
+        setLoading(false);
       }
     };
 
@@ -215,7 +218,7 @@ const PlantsManagement: React.FC = () => {
       case 'minMatureSize':
         if (value < 1 || value > 100) {
           newErrors.minMatureSize =
-            'Kích thước trưởng thành tối thiểu phải từ 0 đến 100 cm';
+            'Kích thước trưởng thành tối thiểu phải từ 1 đến 100 cm';
         } else {
           delete newErrors.minMatureSize;
         }
@@ -223,7 +226,7 @@ const PlantsManagement: React.FC = () => {
       case 'maxMatureSize':
         if (value < 1 || value > 20000) {
           newErrors.maxMatureSize =
-            'Kích thước trưởng thành tối đa phải từ 0 đến 200 m';
+            'Kích thước trưởng thành tối đa phải từ 1 đến 200 m';
         } else {
           delete newErrors.maxMatureSize;
         }
@@ -419,7 +422,7 @@ const PlantsManagement: React.FC = () => {
       resetForm();
 
       toast.success('Cây trồng đã được cập nhật thành công!');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating plant:', error);
 
       if (error.response) {
@@ -504,7 +507,16 @@ const PlantsManagement: React.FC = () => {
     }
   };
 
-  const handleShowDetails = async (id: string) => {};
+  const handleShowDetails = (id: string) => {
+    const plant = plants.find(plant => plant.id === id);
+    if (plant) {
+      setSelectedPlant(plant);
+    }
+  };
+
+  const handleClosePopup = () => {
+    setSelectedPlant(null);
+  };
 
   const plantColumns: PlantColumn[] = [
     {
@@ -948,9 +960,9 @@ const PlantsManagement: React.FC = () => {
                   value={newPlant.minTemperature}
                   onChange={e => {
                     let value = Number(e.target.value);
+                    //kiểm tra giá trị nhập vào
                     if (value < 0 || value > 100) {
                       if (!value) value = 0;
-                      toast.error('Nhiệt độ tối thiểu phải từ 0 đến 100°C');
                       return value; // Dừng lại nếu giá trị không hợp lệ
                     }
                     setNewPlant(prev => ({
@@ -977,8 +989,7 @@ const PlantsManagement: React.FC = () => {
                     // Kiểm tra giá trị nhập vào
                     if (value < 0 || value > 100) {
                       if (!value) value = 0;
-                      toast.error('Nhiệt độ tối đa phải từ 0 đến 100°C');
-                      return value  ; // Dừng lại nếu giá trị không hợp lệ
+                      return value ; // Dừng lại nếu giá trị không hợp lệ
                     }
                     setNewPlant(prev => ({
                       ...prev,
@@ -1012,8 +1023,7 @@ const PlantsManagement: React.FC = () => {
                     let value = Number(e.target.value);
                     // Kiểm tra giá trị nhập vào
                     if (value < 0 || value > 100) {
-                      if (!value) value = 0;
-                      toast.error('Kích thước tối thiểu phải từ 1 đến 100 cm');
+                      if (!value) value = 0;                      
                       return value; // Dừng lại nếu giá trị không hợp lệ
                     }
                     setNewPlant(prev => ({
@@ -1039,7 +1049,7 @@ const PlantsManagement: React.FC = () => {
                     // Kiểm tra giá trị nhập vào
                     if (value < 0 || value > 20000) {
                       if (!value) value = 0;
-                      toast.error('Kích thước tối đa phải từ 1 đến 20000 cm');
+                      
                       return value; // Dừng lại nếu giá trị không hợp lệ
                     }
                     setNewPlant(prev => ({
@@ -1177,8 +1187,18 @@ const PlantsManagement: React.FC = () => {
           </form>
         </div>
       )}
-      ;
-      <Table data={plants} columns={plantColumns} actionColumn={actionColumn} />
+
+      {/* Hiển thị popup khi có cây trồng được chọn */}
+      {selectedPlant && (
+        <PlantDetailsPopup plant={selectedPlant} onClose={handleClosePopup} />
+      )}
+
+      {loading? (
+        <p>Đang tải dữ liệu...</p>
+      ) : (
+        <Table data={plants} columns={plantColumns} actionColumn={actionColumn} />
+        
+      )}
     </>
   );
 };
