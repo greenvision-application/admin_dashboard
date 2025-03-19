@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import {User} from '../../../types/Model';
+// import {User} from '../../../types/Model';
 import { Table } from '../../../components';
 import type { ActionColumn } from '../../../components';
 import provinces from '../../../data/provinces.json';
@@ -41,7 +41,20 @@ interface UserColumn {
   render?: (user: UserTable) => JSX.Element;
 }
 
+interface NewUser {
+  id: string;
+  username: string;
+  email: string;
+  role_id: string;
+  password: string;
+  role?: string;
+  ward: string;
+  district: string;
+  province: string;
+}
+
 const UserList: React.FC = () => {
+  const [errors, setErrors] = useState<Record<string, string>>({});
   //update
   const [edit, setEdit] = useState(false);
   //roles
@@ -52,7 +65,18 @@ const UserList: React.FC = () => {
 
   const [userData, setUserData] = useState<UserTable[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [newUser, setNewUser] = useState({
+  // const [newUser, setNewUser] = useState({
+  //   username: '',
+  //   email: '',
+  //   role_id: '',
+  //   password: '',
+  //   role: '',
+  //   ward: '',
+  //   district: '',
+  //   province: ''
+  // });
+  const [newUser, setNewUser] = useState<NewUser>({
+    id: '',
     username: '',
     email: '',
     role_id: '',
@@ -95,48 +119,191 @@ const UserList: React.FC = () => {
     fetchUsers();
   }, []);
 
-const handleDisable = async (id: string) => {
-  const result = await Swal.fire({
-    title: 'Xác nhận vô hiệu hóa',
-    text: 'Bạn có chắc muốn vô hiệu hóa tài khoản này không?',
-    icon: 'warning',
-    showCancelButton: true,
-    confirmButtonColor: '#d33',
-    cancelButtonColor: '#3085d6',
-    confirmButtonText: 'Vô hiệu hóa',
-    cancelButtonText: 'Hủy',
-  });
-  if (result.isConfirmed) {
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
 
-  try {
-    await updateUser(id, { is_active: false });
+    // Validate username
+    if (!newUser.username.trim()) {
+      newErrors.username = 'Tên người dùng là bắt buộc';
+    }
 
-    // Cập nhật danh sách user trong state
-    setUserData(prev =>
-      prev.map(user =>
-        user.id === id ? { ...user, is_active: false } : user
-      )
-    );
+    // Validate email
+    if (!newUser.email.trim()) {
+      newErrors.email = 'Email là bắt buộc';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newUser.email)) {
+      newErrors.email = 'Email không hợp lệ';
+    }
 
-    // Hiển thị thông báo thành công
-    toast.success('Tài khoản đã được vô hiệu hóa!', {
-      position: 'top-right',
-      autoClose: 3000,
-    });
-  } catch (error) {
-    console.error('Lỗi khi vô hiệu hóa tài khoản:', error);
-    toast.error('Không thể vô hiệu hóa tài khoản. Vui lòng thử lại.', {
-      position: 'top-right',
-      autoClose: 3000,
-    });
-  }
-}
-};
+    // Validate password (chỉ khi tạo mới)
+    if (!edit && !newUser.password.trim()) {
+      newErrors.password = 'Mật khẩu là bắt buộc';
+    } else if (!edit && newUser.password.length < 8) {
+      newErrors.password = 'Mật khẩu phải có ít nhất 8 ký tự';
+    }
 
+    // Validate role
+    if (!newUser.role_id) {
+      newErrors.role_id = 'Vai trò là bắt buộc';
+    }
+
+    // Validate province
+    if (!newUser.province) {
+      newErrors.province = 'Tỉnh/Thành phố là bắt buộc';
+    }
+
+    // Validate district (chỉ khi đã chọn tỉnh)
+    if (newUser.province && !newUser.district) {
+      newErrors.district = 'Quận/Huyện là bắt buộc';
+    }
+
+    // Validate ward (chỉ khi đã chọn huyện)
+    if (newUser.district && !newUser.ward) {
+      newErrors.ward = 'Phường/Xã là bắt buộc';
+    }
+
+    console.log('Errors:', newErrors);
+
+    // Set errors
+    setErrors(newErrors);
+
+    // Return true if no errors
+    return Object.keys(newErrors).length === 0;
+  };
+// validate realtime
+  const validateField = (field: string, value: string) => {
+    const newErrors = { ...errors };
   
+    switch (field) {
+      case 'username':
+        if (!value.trim()) {
+          newErrors.username = 'Tên người dùng là bắt buộc';
+        } else {
+          delete newErrors.username;
+        }
+        break;
+  
+      case 'email':
+        if (!value.trim()) {
+          newErrors.email = 'Email là bắt buộc';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          newErrors.email = 'Email không hợp lệ';
+        } else {
+          delete newErrors.email;
+        }
+        break;
+  
+      case 'password':
+        if (!edit && !value.trim()) {
+          newErrors.password = 'Mật khẩu là bắt buộc';
+        } else if (!edit && value.length < 8) {
+          newErrors.password = 'Mật khẩu phải có ít nhất 8 ký tự';
+        } else {
+          delete newErrors.password;
+        }
+        break;
+  
+      case 'role_id':
+        if (!value) {
+          newErrors.role_id = 'Vai trò là bắt buộc';
+        } else {
+          delete newErrors.role_id;
+        }
+        break;
+  
+      case 'province':
+        if (!value) {
+          newErrors.province = 'Tỉnh/Thành phố là bắt buộc';
+        } else {
+          delete newErrors.province;
+        }
+        break;
+  
+      case 'district':
+        if (newUser.province && !value) {
+          newErrors.district = 'Quận/Huyện là bắt buộc';
+        } else {
+          delete newErrors.district;
+        }
+        break;
+  
+      case 'ward':
+        if (newUser.district && !value) {
+          newErrors.ward = 'Phường/Xã là bắt buộc';
+        } else {
+          delete newErrors.ward;
+        }
+        break;
+  
+      default:
+        break;
+    }
+  
+    setErrors(newErrors);
+  };
+
+  const handleInputChange = (field: string, value: string) => {
+    setNewUser(prev => ({
+      ...prev,
+      [field]: value
+    }));
+
+    // Validate real-time
+  validateField(field, value);
+
+    // Reset error for the field
+    // if (errors[field]) {
+    //   setErrors(prevErrors => ({
+    //     ...prevErrors,
+    //     [field]: ''
+    //   }));
+    // }
+  };
+
+  const handleDisable = async (id: string) => {
+    const result = await Swal.fire({
+      title: 'Xác nhận vô hiệu hóa',
+      text: 'Bạn có chắc muốn vô hiệu hóa tài khoản này không?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Vô hiệu hóa',
+      cancelButtonText: 'Hủy'
+    });
+    if (result.isConfirmed) {
+      try {
+        await updateUser(id, { is_active: false });
+
+        // Cập nhật danh sách user trong state
+        setUserData(prev =>
+          prev.map(user =>
+            user.id === id ? { ...user, is_active: false } : user
+          )
+        );
+
+        // Hiển thị thông báo thành công
+        toast.success('Tài khoản đã được vô hiệu hóa!', {
+          position: 'top-right',
+          autoClose: 3000
+        });
+      } catch (error) {
+        console.error('Lỗi khi vô hiệu hóa tài khoản:', error);
+        toast.error('Không thể vô hiệu hóa tài khoản. Vui lòng thử lại.', {
+          position: 'top-right',
+          autoClose: 3000
+        });
+      }
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate form
+    if (!validateForm()) {
+      console.log('Errors:', errors);
+      return; // Stop if there are errors
+    }
 
     const selectedProvince = provinces.find(
       p => p.code === Number(newUser.province)
@@ -201,7 +368,6 @@ const handleDisable = async (id: string) => {
         ]);
         toast.success('Thêm người dùng thành công!');
       }
-      
 
       setShowForm(false);
       setNewUser({
@@ -214,7 +380,7 @@ const handleDisable = async (id: string) => {
         district: '',
         province: ''
       });
-    } catch (error:any) {
+    } catch (error: any) {
       console.error('Lỗi khi cập nhật user:', error);
       toast.error(error.message);
     }
@@ -268,12 +434,14 @@ const handleDisable = async (id: string) => {
       {
         label: 'Vô hiệu hóa tài khoản',
         onClick: user => handleDisable(user.id),
-        className: 'bg-red-400 hover:bg-red-800'
+        className: 'bg-red-400 hover:bg-red-800',
+        id: user => `disable-btn-${user.id}`
       },
       {
         label: 'Chỉnh sửa thông tin',
         onClick: user => handleEditUser(user),
-        className: 'bg-green-500 hover:bg-green-400'
+        className: 'bg-green-500 hover:bg-green-400',
+        id: user => `edit-btn-${user.id}`
       }
     ]
   };
@@ -301,7 +469,8 @@ const handleDisable = async (id: string) => {
       role_id: user.role_id,
       province: selectedProvince ? selectedProvince.code.toString() : '',
       district: selectedDistrict ? selectedDistrict.code.toString() : '',
-      ward: user.address?.ward || ''
+      ward: user.address?.ward || '',
+      password: ''
     });
 
     // Cập nhật danh sách huyện & xã
@@ -316,14 +485,18 @@ const handleDisable = async (id: string) => {
         role_id: user.role_id,
         province: selectedProvince ? selectedProvince.code.toString() : '',
         district: selectedDistrict ? selectedDistrict.code.toString() : '',
-        ward: selectedWards.find(w => w.name === user.address?.ward)?.code.toString() || ''
+        ward:
+          selectedWards
+            .find(w => w.name === user.address?.ward)
+            ?.code.toString() || '',
+        password: ''
       });
     }, 0);
 
     setShowForm(true); // Hiển thị form chỉnh sửa
   };
 
-  const handleProvinceChange = (e:React.ChangeEvent<HTMLSelectElement>) => {
+  const handleProvinceChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const provinceCode = Number(e.target.value);
     const selectedProvince = provinces.find(p => p.code === provinceCode);
 
@@ -335,6 +508,15 @@ const handleDisable = async (id: string) => {
     });
     setDistricts(selectedProvince ? selectedProvince.districts : []);
     setWards([]);
+    //validate realtime
+    validateField('province', provinceCode.toString());
+    // // Reset errors
+    // if (errors.province) {
+    //   setErrors(prevErrors => ({
+    //     ...prevErrors,
+    //     province: ''
+    //   }));
+    // }
   };
 
   const handleDistrictChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -343,6 +525,15 @@ const handleDisable = async (id: string) => {
 
     setNewUser({ ...newUser, district: districtCode.toString(), ward: '' });
     setWards(selectedDistrict ? selectedDistrict.wards : []);
+    // Validate real-time
+  validateField('district', districtCode.toString());
+    // // Reset errors
+    // if (errors.district) {
+    //   setErrors(prevErrors => ({
+    //     ...prevErrors,
+    //     district: ''
+    //   }));
+    // }
   };
   const resetUserForm = () => {
     if (edit) {
@@ -355,7 +546,8 @@ const handleDisable = async (id: string) => {
         password: '',
         ward: '',
         district: '',
-        province: ''
+        province: '',
+        role: ''
       });
       setDistricts([]);
       setWards([]);
@@ -369,6 +561,7 @@ const handleDisable = async (id: string) => {
         <button
           onClick={() => {
             setShowForm(!showForm);
+            setErrors({});
             if (!showForm) resetUserForm();
           }}
           className={`rounded px-4 py-2 text-white ${!showForm ? 'bg-green-500 hover:bg-green-900' : 'bg-red-500 hover:bg-red-400'}`}
@@ -391,30 +584,32 @@ const handleDisable = async (id: string) => {
                 Tên người dùng <span className="text-red-500">*</span>
               </label>
               <input
-              id="input-username"
+                id="input-username"
                 type="text"
                 value={newUser.username}
-                onChange={e =>
-                  setNewUser({ ...newUser, username: e.target.value })
-                }
+                onChange={e => handleInputChange('username', e.target.value)}
                 className="w-full rounded border p-2"
-                required
+                 
               />
+              {errors.username && (
+                <p id='error-username' className="mt-1 text-sm text-red-500">{errors.username}</p>
+              )}
             </div>
             <div className="mb-3">
               <label className="mb-1 block text-sm font-medium">
                 Email <span className="text-red-500">*</span>
               </label>
               <input
-              id="input-email"
+                id="input-email"
                 type="email"
                 value={newUser.email}
-                onChange={e =>
-                  setNewUser({ ...newUser, email: e.target.value })
-                }
+                onChange={e => handleInputChange('email', e.target.value)}
                 className="w-full rounded border p-2"
-                required
+                 
               />
+              {errors.email && (
+                <p id='error-email' className="mt-1 text-sm text-red-500">{errors.email}</p>
+              )}
             </div>
             {!edit && (
               <div className="mb-3">
@@ -422,16 +617,17 @@ const handleDisable = async (id: string) => {
                   Mật khẩu <span className="text-red-500">*</span>
                 </label>
                 <input
-                id="input-password"
+                  id="input-password"
                   type="password"
                   value={newUser.password}
-                  onChange={e =>
-                    setNewUser({ ...newUser, password: e.target.value })
-                  }
+                  onChange={e => handleInputChange('password', e.target.value)}
                   className="w-full rounded border p-2"
                   minLength={8}
-                  required
+                   
                 />
+                {errors.password && (
+                  <p id='error-password' className="mt-1 text-sm text-red-500">{errors.password}</p>
+                )}
               </div>
             )}
             <div className="mb-3">
@@ -439,11 +635,11 @@ const handleDisable = async (id: string) => {
                 Tỉnh/Thành phố <span className="text-red-500">*</span>
               </label>
               <select
-              id="select-province"
+                id="select-province"
                 value={newUser.province}
                 onChange={handleProvinceChange}
                 className="w-full rounded border p-2"
-                required
+                 
               >
                 <option value="">Chọn tỉnh/thành phố</option>
                 {provinces.map(province => (
@@ -452,6 +648,9 @@ const handleDisable = async (id: string) => {
                   </option>
                 ))}
               </select>
+              {errors.province && (
+                <p id='error-province' className="mt-1 text-sm text-red-500">{errors.province}</p>
+              )}
             </div>
 
             <div className="mb-3">
@@ -459,10 +658,11 @@ const handleDisable = async (id: string) => {
                 Quận/Huyện <span className="text-red-500">*</span>
               </label>
               <select
+                id="select-district"
                 value={newUser.district}
                 onChange={handleDistrictChange}
                 className="w-full rounded border p-2"
-                required
+                 
                 disabled={!newUser.province}
               >
                 <option value="">Chọn quận/huyện</option>
@@ -472,6 +672,9 @@ const handleDisable = async (id: string) => {
                   </option>
                 ))}
               </select>
+              {errors.district && (
+                <p id='error-district' className="mt-1 text-sm text-red-500">{errors.district}</p>
+              )}
             </div>
 
             <div className="mb-3">
@@ -479,11 +682,11 @@ const handleDisable = async (id: string) => {
                 Phường/Xã <span className="text-red-500">*</span>
               </label>
               <select
-               id="select-ward"
+                id="select-ward"
                 value={newUser.ward}
-                onChange={e => setNewUser({ ...newUser, ward: e.target.value })}
+                onChange={e => handleInputChange('ward', e.target.value)}
                 className="w-full rounded border p-2"
-                required
+                 
                 disabled={!newUser.district}
               >
                 <option value="">Chọn phường/xã</option>
@@ -493,6 +696,9 @@ const handleDisable = async (id: string) => {
                   </option>
                 ))}
               </select>
+              {errors.ward && (
+                <p id='error-ward' className="mt-1 text-sm text-red-500">{errors.ward}</p>
+              )}
             </div>
 
             {/* Dropdown chọn vai trò */}
@@ -501,14 +707,14 @@ const handleDisable = async (id: string) => {
                 Vai trò <span className="text-red-500">*</span>
               </label>
               <select
-              id="select-role"
+                id="select-role"
                 value={newUser.role_id}
                 onChange={e => {
                   console.log('Role UUID được chọn:', e.target.value);
                   setNewUser({ ...newUser, role_id: e.target.value });
                 }}
                 className="w-full rounded border p-2"
-                required
+                 
               >
                 <option value="">Chọn vai trò</option>
                 {roles.map(role => (
@@ -517,17 +723,20 @@ const handleDisable = async (id: string) => {
                   </option>
                 ))}
               </select>
+              {errors.role_id && (
+                <p id='error-role_id' className="mt-1 text-sm text-red-500">{errors.role_id}</p>
+              )}
             </div>
             <div className="flex gap-2">
               <button
-              id="button-submit"
+                id="button-submit"
                 type="submit"
                 className="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
               >
                 Lưu
               </button>
               <button
-              id="button-cancel"
+                id="button-cancel"
                 onClick={() => setShowForm(false)}
                 className="rounded bg-gray-500 px-4 py-2 text-white hover:bg-gray-600"
               >
