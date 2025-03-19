@@ -952,10 +952,11 @@ const PlantsManagement: React.FC = () => {
                   type="number"
                   value={newPlant.minTemperature}
                   onChange={e => {
-                    const value = Number(e.target.value);
+                    let value = Number(e.target.value);
                     if (value < 0 || value > 100) {
+                      if (!value) value = 0;
                       toast.error('Nhiệt độ tối thiểu phải từ 0 đến 100°C');
-                      return; // Dừng lại nếu giá trị không hợp lệ
+                      return value; // Dừng lại nếu giá trị không hợp lệ
                     }
                     setNewPlant(prev => ({
                       ...prev,
@@ -963,8 +964,6 @@ const PlantsManagement: React.FC = () => {
                     }));
                     validateField('minTemperature', value); // Gọi validation
                   }}
-                  min={0} // Giới hạn tối thiểu
-                  max={100} // Giới hạn tối đa
                   className="w-1/2 rounded border p-2"
                   placeholder="Tối thiểu"
                 />
@@ -979,11 +978,12 @@ const PlantsManagement: React.FC = () => {
                   type="number"
                   value={newPlant.maxTemperature}
                   onChange={e => {
-                    const value = Number(e.target.value);
+                    let value = Number(e.target.value);
                     // Kiểm tra giá trị nhập vào
                     if (value < 0 || value > 100) {
+                      if (!value) value = 0;
                       toast.error('Nhiệt độ tối đa phải từ 0 đến 100°C');
-                      return; // Dừng lại nếu giá trị không hợp lệ
+                      return value  ; // Dừng lại nếu giá trị không hợp lệ
                     }
                     setNewPlant(prev => ({
                       ...prev,
@@ -991,8 +991,6 @@ const PlantsManagement: React.FC = () => {
                     }));
                     validateField('maxTemperature', value); // Gọi validation
                   }}
-                  min={0} // Giới hạn tối thiểu
-                  max={100} // Giới hạn tối đa
                   className="w-1/2 rounded border p-2"
                   placeholder="Tối đa"
                 />
@@ -1016,11 +1014,12 @@ const PlantsManagement: React.FC = () => {
                   type="number"
                   value={newPlant.minMatureSize}
                   onChange={e => {
-                    const value = Number(e.target.value);
+                    let value = Number(e.target.value);
                     // Kiểm tra giá trị nhập vào
                     if (value < 1 || value > 100) {
+                      if (!value) value = 0;
                       toast.error('Kích thước tối thiểu phải từ 1 đến 100 cm');
-                      return; // Dừng lại nếu giá trị không hợp lệ
+                      return value; // Dừng lại nếu giá trị không hợp lệ
                     }
                     setNewPlant(prev => ({
                       ...prev,
@@ -1028,8 +1027,6 @@ const PlantsManagement: React.FC = () => {
                     }));
                     validateField('minMatureSize', value); // Gọi validation
                   }}
-                  min={1} // Giới hạn tối thiểu
-                  max={100} // Giới hạn tối đa
                   className="w-1/2 rounded border p-2"
                   placeholder="Tối thiểu"
                 />
@@ -1043,11 +1040,12 @@ const PlantsManagement: React.FC = () => {
                   type="number"
                   value={newPlant.maxMatureSize}
                   onChange={e => {
-                    const value = Number(e.target.value);
+                    let value = Number(e.target.value);
                     // Kiểm tra giá trị nhập vào
-                    if (value < 1 || value > 20000) {
+                    if (value < -1 || value > 20000) {
+                      if (!value) value = 0;
                       toast.error('Kích thước tối đa phải từ 1 đến 20000 cm');
-                      return; // Dừng lại nếu giá trị không hợp lệ
+                      return value; // Dừng lại nếu giá trị không hợp lệ
                     }
                     setNewPlant(prev => ({
                       ...prev,
@@ -1055,8 +1053,6 @@ const PlantsManagement: React.FC = () => {
                     }));
                     validateField('maxMatureSize', value); // Gọi validation
                   }}
-                  min={1} // Giới hạn tối thiểu
-                  max={20000} // Giới hạn tối đa
                   className="w-1/2 rounded border p-2"
                   placeholder="Tối đa"
                 />
