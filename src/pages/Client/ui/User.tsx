@@ -162,6 +162,9 @@ const UserList: React.FC = () => {
     }
 
     console.log('Errors:', newErrors);
+    if (!newErrors) {
+      toast.error(JSON.stringify(newErrors));
+    }
 
     // Set errors
     setErrors(newErrors);
