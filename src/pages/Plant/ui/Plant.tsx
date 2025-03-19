@@ -5,12 +5,12 @@ import type { ActionColumn } from '../../../components';
 import { plantService } from '../../../services/plantService';
 import { Plant, Category } from '../../../types/Model';
 import { categoryService } from '../../../services/categoryService';
-import { CircleCheckBig, CirclePlus, CircleX } from 'lucide-react';
+import { CircleCheckBig, CircleX } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
 
-interface PlantTable {
+export interface PlantTable {
   id: string; // UUID của cây trồng
   created_at: string; // Thời gian tạo
   plant_name: string; // Tên cây trồng
@@ -66,6 +66,7 @@ const PlantsManagement: React.FC = () => {
   const [Categories, setCategories] = useState<Category[]>([]);
   const [plants, setPlants] = useState<Plant[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [selectedPlant, setSelectedPlant] = useState<PlantTable | null>(null); 
 
   const [newPlant, setNewPlant] = useState<
     Omit<PlantTable, 'id' | 'created_at' | 'Category'>
@@ -116,6 +117,16 @@ const PlantsManagement: React.FC = () => {
     fetchData();
   }, []);
 
+  // Hàm kiểm tra URL hợp lệ
+const isValidUrl = (url: string) => {
+  try {
+    new URL(url);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
   const validateField = (field: string, value: any) => {
     const newErrors = { ...errors };
   
@@ -137,20 +148,22 @@ const PlantsManagement: React.FC = () => {
         break;
   
       case 'image_url':
-        if (value.length === 0) {
-          newErrors.image_url = 'Hình ảnh là bắt buộc';
-        } else {
-          delete newErrors.image_url;
-        }
-        break;
+      if (value.length === 0) {
+        newErrors.image_url = 'Hình ảnh là bắt buộc';
+      } else if (value.some((url: string) => !isValidUrl(url))) {
+        newErrors.image_url = 'Một hoặc nhiều URL không hợp lệ';
+      } else {
+        delete newErrors.image_url;
+      }
+      break;
   
       case 'overview':
-        if (value.length === 0) {
-          newErrors.overview = 'Mô tả tổng quan là bắt buộc';
-        } else {
-          delete newErrors.overview;
-        }
-        break;
+      if (value.length === 0) {
+        newErrors.overview = 'Mô tả tổng quan là bắt buộc';
+      } else {
+        delete newErrors.overview;
+      }
+      break;
   
       case 'category_id':
         if (!value) {
@@ -185,9 +198,16 @@ const PlantsManagement: React.FC = () => {
   };
 
   const handleInputChange = (field: string, value: any) => {
+
+    let newValue = value;
+   // Xử lý đặc biệt cho trường image_url và overview
+  if (field === 'image_url' || field === 'overview' || field === 'characteristic' || field === 'function' || field === 'meaning') {
+    // Tách chuỗi nhập vào thành mảng các phần tử
+    newValue = value.split(',').map((item: string) => item.trim());
+  }
     setNewPlant((prev) => ({
       ...prev,
-      [field]: value,
+      [field]: newValue,
     }));
   
     // Validate real-time
@@ -409,6 +429,8 @@ const PlantsManagement: React.FC = () => {
     }
   };
 
+  const handleShowDetails = async(id : string) => {};
+
   const plantColumns: PlantColumn[] = [
     {
       key: 'image_url',
@@ -523,6 +545,12 @@ const PlantsManagement: React.FC = () => {
         onClick: plant => handleDelete(plant.id),
         className: 'bg-red-400 hover:bg-red-700',
         id: plant => `delete-btn-${plant.id}`
+      },
+      {
+        label: 'Chi tiết',
+        onClick: plant => handleShowDetails(plant.id),
+        className: 'bg-gray-300 hover:bg-gray-500',
+        id: plant => `detail-btn-${plant.id}`
       }
     ]
   };
