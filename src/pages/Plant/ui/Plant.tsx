@@ -5,10 +5,11 @@ import type { ActionColumn } from '../../../components';
 import { plantService } from '../../../services/plantService';
 import { Plant, Category } from '../../../types/Model';
 import { categoryService } from '../../../services/categoryService';
-import { CircleCheckBig, CircleX } from 'lucide-react';
+import { Briefcase, CircleCheckBig, CircleX } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
+import { PlantDetailsPopup } from '../../../components/detailsPlant';
 
 export interface PlantTable {
   id: string; // UUID của cây trồng
@@ -66,7 +67,7 @@ const PlantsManagement: React.FC = () => {
   const [Categories, setCategories] = useState<Category[]>([]);
   const [plants, setPlants] = useState<Plant[]>([]);
   const [showForm, setShowForm] = useState(false);
-  const [selectedPlant, setSelectedPlant] = useState<PlantTable | null>(null); 
+  const [selectedPlant, setSelectedPlant] = useState<PlantTable | null>(null);
 
   const [newPlant, setNewPlant] = useState<
     Omit<PlantTable, 'id' | 'created_at' | 'Category'>
@@ -118,18 +119,18 @@ const PlantsManagement: React.FC = () => {
   }, []);
 
   // Hàm kiểm tra URL hợp lệ
-const isValidUrl = (url: string) => {
-  try {
-    new URL(url);
-    return true;
-  } catch (e) {
-    return false;
-  }
-};
+  const isValidUrl = (url: string) => {
+    try {
+      new URL(url);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  };
 
   const validateField = (field: string, value: any) => {
     const newErrors = { ...errors };
-  
+
     switch (field) {
       case 'plant_name':
         if (!value.trim()) {
@@ -138,7 +139,7 @@ const isValidUrl = (url: string) => {
           delete newErrors.plant_name;
         }
         break;
-  
+
       case 'scientific_name':
         if (!value.trim()) {
           newErrors.scientific_name = 'Tên khoa học là bắt buộc';
@@ -146,25 +147,48 @@ const isValidUrl = (url: string) => {
           delete newErrors.scientific_name;
         }
         break;
-  
+
       case 'image_url':
-      if (value.length === 0) {
-        newErrors.image_url = 'Hình ảnh là bắt buộc';
-      } else if (value.some((url: string) => !isValidUrl(url))) {
-        newErrors.image_url = 'Một hoặc nhiều URL không hợp lệ';
-      } else {
-        delete newErrors.image_url;
-      }
-      break;
-  
+        if (value.length === 0) {
+          newErrors.image_url = 'Hình ảnh là bắt buộc';
+        } else if (value.some((url: string) => !isValidUrl(url))) {
+          newErrors.image_url = 'Một hoặc nhiều URL không hợp lệ';
+        } else {
+          delete newErrors.image_url;
+        }
+        break;
+
       case 'overview':
-      if (value.length === 0) {
-        newErrors.overview = 'Mô tả tổng quan là bắt buộc';
-      } else {
-        delete newErrors.overview;
-      }
-      break;
-  
+        if (value.length === 0) {
+          newErrors.overview = 'Mô tả tổng quan là bắt buộc';
+        } else {
+          delete newErrors.overview;
+        }
+        break;
+      case 'characteristic':
+        if (value.length === 0) {
+          newErrors.characteristic = 'Đặc điểm là bắt buộc';
+        } else {
+          delete newErrors.characteristic;
+        }
+        break;
+
+      case 'function':
+        if (value.length === 0) {
+          newErrors.function = 'Công dụng là bắt buộc';
+        } else {
+          delete newErrors.function;
+        }
+        break;
+
+      case 'meaning':
+        if (value.length === 0) {
+          newErrors.meaning = 'Ý nghĩa là bắt buộc';
+        } else {
+          delete newErrors.meaning;
+        }
+        break;
+
       case 'category_id':
         if (!value) {
           newErrors.category_id = 'Danh mục là bắt buộc';
@@ -172,7 +196,7 @@ const isValidUrl = (url: string) => {
           delete newErrors.category_id;
         }
         break;
-  
+
       case 'minTemperature':
         if (value < 0 || value > 100) {
           newErrors.minTemperature = 'Nhiệt độ tối thiểu phải từ 0 đến 100°C';
@@ -180,7 +204,7 @@ const isValidUrl = (url: string) => {
           delete newErrors.minTemperature;
         }
         break;
-  
+
       case 'maxTemperature':
         if (value < 0 || value > 100) {
           newErrors.maxTemperature = 'Nhiệt độ tối đa phải từ 0 đến 100°C';
@@ -188,35 +212,64 @@ const isValidUrl = (url: string) => {
           delete newErrors.maxTemperature;
         }
         break;
-  
+      case 'minMatureSize':
+        if (value < 1 || value > 100) {
+          newErrors.minMatureSize =
+            'Kích thước trưởng thành tối thiểu phải từ 0 đến 100 cm';
+        } else {
+          delete newErrors.minMatureSize;
+        }
+        break;
+      case 'maxMatureSize':
+        if (value < 1 || value > 20000) {
+          newErrors.maxMatureSize =
+            'Kích thước trưởng thành tối đa phải từ 0 đến 200 m';
+        } else {
+          delete newErrors.maxMatureSize;
+        }
+        break;
+
       // Thêm các trường khác tương tự
       default:
         break;
     }
-  
+
     setErrors(newErrors);
   };
 
   const handleInputChange = (field: string, value: any) => {
-
     let newValue = value;
-   // Xử lý đặc biệt cho trường image_url và overview
-  if (field === 'image_url' || field === 'overview' || field === 'characteristic' || field === 'function' || field === 'meaning') {
-    // Tách chuỗi nhập vào thành mảng các phần tử
-    newValue = value.split(',').map((item: string) => item.trim());
-  }
-    setNewPlant((prev) => ({
+
+    // Xử lý đặc biệt cho các trường là mảng
+    if (
+      field === 'image_url' ||
+      field === 'overview' ||
+      field === 'characteristic' ||
+      field === 'function' ||
+      field === 'meaning'
+    ) {
+      // Tách chuỗi nhập vào thành mảng các phần tử
+      newValue = value.split(',').map((item: string) => item.trim());
+      // Loại bỏ các phần tử rỗng
+      newValue = newValue.filter((item: string) => item.trim() !== '');
+    }
+    // Xử lý đặc biệt cho trường approved_content
+    if (field === 'approved_content') {
+      newValue = value === 'true'; // Chuyển đổi chuỗi 'true' hoặc 'false' thành boolean
+    }
+
+    setNewPlant(prev => ({
       ...prev,
-      [field]: newValue,
+      [field]: newValue
     }));
-  
+
     // Validate real-time
-    validateField(field, value);
+    validateField(field, newValue);
   };
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
-  
+
     // Kiểm tra từng trường
     if (!newPlant.plant_name.trim()) {
       newErrors.plant_name = 'Tên cây trồng là bắt buộc';
@@ -230,6 +283,15 @@ const isValidUrl = (url: string) => {
     if (newPlant.overview.length === 0) {
       newErrors.overview = 'Mô tả tổng quan là bắt buộc';
     }
+    if (newPlant.characteristic.length === 0) {
+      newErrors.characteristic = 'Đặc điểm là bắt buộc';
+    }
+    if (newPlant.function.length === 0) {
+      newErrors.function = 'Công dụng là bắt buộc';
+    }
+    if (newPlant.meaning.length === 0) {
+      newErrors.meaning = 'Ý nghĩa là bắt buộc';
+    }
     if (!newPlant.category_id) {
       newErrors.category_id = 'Danh mục là bắt buộc';
     }
@@ -239,9 +301,21 @@ const isValidUrl = (url: string) => {
     if (newPlant.maxTemperature < 0 || newPlant.maxTemperature > 100) {
       newErrors.maxTemperature = 'Nhiệt độ tối đa phải từ 0 đến 100°C';
     }
-  
+    if (newPlant.minMatureSize < 1 || newPlant.minMatureSize > 100) {
+      newErrors.minMatureSize =
+        'Kích thước trưởng thành tối thiểu phải từ 0 đến 100 cm';
+    }
+    if (newPlant.maxMatureSize < 1 || newPlant.maxMatureSize > 20000) {
+      newErrors.maxMatureSize =
+        'Kích thước trưởng thành tối đa phải từ 0 đến 200 m';
+    }
+
     setErrors(newErrors);
-  
+    // chạy obect của new errors sau đó hiển thị lỗi lên toast
+    if (!newErrors) {
+      toast.error(JSON.stringify(newErrors));
+    }
+
     // Trả về true nếu không có lỗi
     return Object.keys(newErrors).length === 0;
   };
@@ -267,10 +341,13 @@ const isValidUrl = (url: string) => {
 
   const handleAddPlant = async () => {
     try {
-      console.log('Dữ liệu được gửi lên API:', newPlant);
+      // console.log('Dữ liệu được gửi lên API:', newPlant);
 
+      // // const createdPlant = await plantService.createPlant(newPlant);
+      // // console.log('Phản hồi từ API:', createdPlant);
+      console.log('Before API call:', newPlant);
       const createdPlant = await plantService.createPlant(newPlant);
-      console.log('Phản hồi từ API:', createdPlant);
+      console.log('After API call:', createdPlant);
 
       // Tìm danh mục từ danh sách Categories
       const category = Categories.find(
@@ -389,11 +466,14 @@ const isValidUrl = (url: string) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-  // Kiểm tra form trước khi submit
-  if (!validateForm()) {
-    console.log('Validation failed');
-    return;
-  }
+    // Kiểm tra form trước khi submit
+    if (!validateForm()) {
+      console.log('Validation failed');
+      return;
+    }
+
+    // Kiểm tra lại dữ liệu trước khi gửi
+    console.log('Data to be sent:', newPlant);
 
     if (isEdit) {
       await handleUpdatePlant(); // Cập nhật nếu đang ở chế độ chỉnh sửa
@@ -429,14 +509,13 @@ const isValidUrl = (url: string) => {
     }
   };
 
-  const handleShowDetails = async(id : string) => {};
+  const handleShowDetails = async (id: string) => {};
 
   const plantColumns: PlantColumn[] = [
     {
       key: 'image_url',
       title: 'Hình ảnh',
       render: (plant: PlantTable) => (
-        
         <img
           src={plant.image_url?.[0] || '/defaultPlant.png'}
           alt={plant.plant_name}
@@ -586,16 +665,15 @@ const isValidUrl = (url: string) => {
                 Tên cây trồng <span className="text-red-500">*</span>
               </label>
               <input
-              id='input-plant_name'
+                id="input-plant_name"
                 type="text"
                 value={newPlant.plant_name}
-                onChange={(e) => handleInputChange('plant_name', e.target.value)}
+                onChange={e => handleInputChange('plant_name', e.target.value)}
                 className="w-full rounded border p-2"
-                
               />
               {errors.plant_name && (
-      <p className="mt-1 text-sm text-red-500">{errors.plant_name}</p>
-    )}
+                <p className="mt-1 text-sm text-red-500">{errors.plant_name}</p>
+              )}
             </div>
 
             {/* Tên khoa học */}
@@ -604,16 +682,19 @@ const isValidUrl = (url: string) => {
                 Tên khoa học <span className="text-red-500">*</span>
               </label>
               <input
-              id='input-scientific_name'
+                id="input-scientific_name"
                 type="text"
                 value={newPlant.scientific_name}
-                onChange={(e) => handleInputChange('scientific_name', e.target.value)}
+                onChange={e =>
+                  handleInputChange('scientific_name', e.target.value)
+                }
                 className="w-full rounded border p-2"
-                 
               />
               {errors.scientific_name && (
-      <p className="mt-1 text-sm text-red-500">{errors.scientific_name}</p>
-    )}
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.scientific_name}
+                </p>
+              )}
             </div>
 
             {/* URL hình ảnh */}
@@ -623,16 +704,15 @@ const isValidUrl = (url: string) => {
                 <span className="text-red-500">*</span>
               </label>
               <input
-                id='input-image_url'
+                id="input-image_url"
                 type="text"
                 value={newPlant.image_url.join(', ')}
-                onChange={(e) => handleInputChange('image_url', e.target.value)}
+                onChange={e => handleInputChange('image_url', e.target.value)}
                 className="w-full rounded border p-2"
-                
               />
               {errors.image_url && (
-      <p className="mt-1 text-sm text-red-500">{errors.image_url}</p>
-    )}
+                <p className="mt-1 text-sm text-red-500">{errors.image_url}</p>
+              )}
             </div>
 
             {/* Mô tả tổng quan */}
@@ -642,16 +722,15 @@ const isValidUrl = (url: string) => {
                 <span className="text-red-500">*</span>
               </label>
               <input
-              id='input-overview'
+                id="input-overview"
                 type="text"
                 value={newPlant.overview.join(', ')}
-                onChange={(e) => handleInputChange('overview', e.target.value)}
+                onChange={e => handleInputChange('overview', e.target.value)}
                 className="w-full rounded border p-2"
-                 
               />
               {errors.overview && (
-      <p className="mt-1 text-sm text-red-500">{errors.overview}</p>    
-    )}
+                <p className="mt-1 text-sm text-red-500">{errors.overview}</p>
+              )}
             </div>
 
             {/* Đặc điểm */}
@@ -661,16 +740,19 @@ const isValidUrl = (url: string) => {
                 <span className="text-red-500">*</span>
               </label>
               <input
-              id='input-characteristic'
+                id="input-characteristic"
                 type="text"
                 value={newPlant.characteristic.join(', ')}
-                onChange={(e) => handleInputChange('characteristic', e.target.value)}
+                onChange={e =>
+                  handleInputChange('characteristic', e.target.value)
+                }
                 className="w-full rounded border p-2"
-                 
               />
               {errors.characteristic && (
-      <p className="mt-1 text-sm text-red-500">{errors.characteristic}</p>
-    )}
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.characteristic}
+                </p>
+              )}
             </div>
 
             {/* Công dụng */}
@@ -680,16 +762,15 @@ const isValidUrl = (url: string) => {
                 <span className="text-red-500">*</span>
               </label>
               <input
-              id='input-function'
+                id="input-function"
                 type="text"
                 value={newPlant.function.join(', ')}
-                onChange={(e) => handleInputChange('function', e.target.value)}
+                onChange={e => handleInputChange('function', e.target.value)}
                 className="w-full rounded border p-2"
-                 
               />
-              {errors.function && ( 
-      <p className="mt-1 text-sm text-red-500">{errors.function}</p>
-    )}
+              {errors.function && (
+                <p className="mt-1 text-sm text-red-500">{errors.function}</p>
+              )}
             </div>
 
             {/* Ý nghĩa */}
@@ -699,16 +780,15 @@ const isValidUrl = (url: string) => {
                 <span className="text-red-500">*</span>
               </label>
               <input
-              id='input-meaning'
+                id="input-meaning"
                 type="text"
                 value={newPlant.meaning.join(', ')}
-                onChange={(e) => handleInputChange('meaning', e.target.value)}
+                onChange={e => handleInputChange('meaning', e.target.value)}
                 className="w-full rounded border p-2"
-                 
               />
               {errors.meaning && (
-      <p className="mt-1 text-sm text-red-500">{errors.meaning}</p>
-    )}
+                <p className="mt-1 text-sm text-red-500">{errors.meaning}</p>
+              )}
             </div>
 
             {/* Mức độ khó */}
@@ -717,9 +797,9 @@ const isValidUrl = (url: string) => {
                 Mức độ khó <span className="text-red-500">*</span>
               </label>
               <select
-              id='input-difficulty_level'
+                id="input-difficulty_level"
                 value={newPlant.difficulty_level}
-                onChange={(e) =>{
+                onChange={e => {
                   setNewPlant(prev => ({
                     ...prev,
                     difficulty_level: e.target.value as
@@ -732,7 +812,6 @@ const isValidUrl = (url: string) => {
                   validateField('difficulty_level', e.target.value);
                 }}
                 className="w-full rounded border p-2"
-                 
               >
                 <option value="EASY">Dễ</option>
                 <option value="MEDIUM">Trung bình</option>
@@ -741,8 +820,10 @@ const isValidUrl = (url: string) => {
                 <option value="EXTREME">Cực kỳ khó</option>
               </select>
               {errors.difficulty_level && (
-      <p className="mt-1 text-sm text-red-500">{errors.difficulty_level}</p>
-    )}
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.difficulty_level}
+                </p>
+              )}
             </div>
 
             {/* Loại đất */}
@@ -751,9 +832,9 @@ const isValidUrl = (url: string) => {
                 Loại đất <span className="text-red-500">*</span>
               </label>
               <select
-              id='input-soil_type'
+                id="input-soil_type"
                 value={newPlant.soil_type}
-                onChange={e =>{
+                onChange={e => {
                   setNewPlant(prev => ({
                     ...prev,
                     soil_type: e.target.value as
@@ -767,7 +848,6 @@ const isValidUrl = (url: string) => {
                   validateField('soil_type', e.target.value);
                 }}
                 className="w-full rounded border p-2"
-                 
               >
                 <option value="SANDY">Đất cát</option>
                 <option value="CLAY">Đất sét</option>
@@ -777,8 +857,8 @@ const isValidUrl = (url: string) => {
                 <option value="LOAM">Đất thịt</option>
               </select>
               {errors.soil_type && (
-      <p className="mt-1 text-sm text-red-500">{errors.soil_type}</p>
-    )}
+                <p className="mt-1 text-sm text-red-500">{errors.soil_type}</p>
+              )}
             </div>
 
             {/* Danh mục */}
@@ -787,9 +867,9 @@ const isValidUrl = (url: string) => {
                 Danh mục <span className="text-red-500">*</span>
               </label>
               <select
-              id='input-category_id'
+                id="input-category_id"
                 value={newPlant.category_id}
-                onChange={e =>{
+                onChange={e => {
                   setNewPlant(prev => ({
                     ...prev,
                     category_id: e.target.value
@@ -797,7 +877,6 @@ const isValidUrl = (url: string) => {
                   validateField('category_id', e.target.value);
                 }}
                 className="w-full rounded border p-2"
-                 
               >
                 <option value="">Chọn danh mục</option>
                 {Categories.map(category => (
@@ -807,8 +886,10 @@ const isValidUrl = (url: string) => {
                 ))}
               </select>
               {errors.category_id && (
-                  <p className="mt-1 text-sm text-red-500">{errors.category_id}</p>
-                )}
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.category_id}
+                </p>
+              )}
             </div>
 
             {/* Vị trí sinh trưởng */}
@@ -817,9 +898,9 @@ const isValidUrl = (url: string) => {
                 Vị trí sinh trưởng <span className="text-red-500">*</span>
               </label>
               <select
-                id='input-habitatLocation'
+                id="input-habitatLocation"
                 value={newPlant.habitatLocation}
-                onChange={e =>{
+                onChange={e => {
                   setNewPlant(prev => ({
                     ...prev,
                     habitatLocation: e.target.value as
@@ -839,7 +920,6 @@ const isValidUrl = (url: string) => {
                   validateField('habitatLocation', e.target.value);
                 }}
                 className="w-full rounded border p-2"
-                 
               >
                 <option value="INDOOR">Trong nhà</option>
                 <option value="OUTDOOR">Ngoài trời</option>
@@ -855,8 +935,10 @@ const isValidUrl = (url: string) => {
                 <option value="WALL_PLANTER">Chậu treo tường</option>
               </select>
               {errors.habitatLocation && (
-                  <p className="mt-1 text-sm text-red-500">{errors.habitatLocation}</p>
-                )}
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.habitatLocation}
+                </p>
+              )}
             </div>
 
             {/* Nhiệt độ tối thiểu và tối đa */}
@@ -866,48 +948,59 @@ const isValidUrl = (url: string) => {
               </label>
               <div className="flex gap-2">
                 <input
-                  id='input-minTemperature'
+                  id="input-minTemperature"
                   type="number"
                   value={newPlant.minTemperature}
-                  onChange={(e) => {
+                  onChange={e => {
                     const value = Number(e.target.value);
-                    setNewPlant((prev) => ({
+                    if (value < 0 || value > 100) {
+                      toast.error('Nhiệt độ tối thiểu phải từ 0 đến 100°C');
+                      return; // Dừng lại nếu giá trị không hợp lệ
+                    }
+                    setNewPlant(prev => ({
                       ...prev,
-                      minTemperature: value,
+                      minTemperature: value
                     }));
                     validateField('minTemperature', value); // Gọi validation
                   }}
-                  min={0}
-                  max={100}
+                  min={0} // Giới hạn tối thiểu
+                  max={100} // Giới hạn tối đa
                   className="w-1/2 rounded border p-2"
                   placeholder="Tối thiểu"
-                   
                 />
                 {errors.minTemperature && (
-      <p className="mt-1 text-sm text-red-500">{errors.minTemperature}</p>
-    )}
-                
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.minTemperature}
+                  </p>
+                )}
+
                 <input
-                  id='input-maxTemperature'
+                  id="input-maxTemperature"
                   type="number"
                   value={newPlant.maxTemperature}
-                  onChange={(e) => {
+                  onChange={e => {
                     const value = Number(e.target.value);
-                    setNewPlant((prev) => ({
+                    // Kiểm tra giá trị nhập vào
+                    if (value < 0 || value > 100) {
+                      toast.error('Nhiệt độ tối đa phải từ 0 đến 100°C');
+                      return; // Dừng lại nếu giá trị không hợp lệ
+                    }
+                    setNewPlant(prev => ({
                       ...prev,
-                      maxTemperature: value,
+                      maxTemperature: value
                     }));
                     validateField('maxTemperature', value); // Gọi validation
                   }}
-                  min={0}
-                  max={100}
+                  min={0} // Giới hạn tối thiểu
+                  max={100} // Giới hạn tối đa
                   className="w-1/2 rounded border p-2"
                   placeholder="Tối đa"
-                   
                 />
                 {errors.maxTemperature && (
-      <p className="mt-1 text-sm text-red-500">{errors.maxTemperature}</p>
-    )}
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.maxTemperature}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -919,29 +1012,59 @@ const isValidUrl = (url: string) => {
               </label>
               <div className="flex gap-2">
                 <input
-                  id='input-minMatureSize'
+                  id="input-minMatureSize"
                   type="number"
                   value={newPlant.minMatureSize}
-                  onChange={(e) => handleInputChange('minMatureSize', e.target.value)}
+                  onChange={e => {
+                    const value = Number(e.target.value);
+                    // Kiểm tra giá trị nhập vào
+                    if (value < 1 || value > 100) {
+                      toast.error('Kích thước tối thiểu phải từ 1 đến 100 cm');
+                      return; // Dừng lại nếu giá trị không hợp lệ
+                    }
+                    setNewPlant(prev => ({
+                      ...prev,
+                      minMatureSize: value
+                    }));
+                    validateField('minMatureSize', value); // Gọi validation
+                  }}
+                  min={1} // Giới hạn tối thiểu
+                  max={100} // Giới hạn tối đa
                   className="w-1/2 rounded border p-2"
                   placeholder="Tối thiểu"
-                   
                 />
                 {errors.minMatureSize && (
-      <p className="mt-1 text-sm text-red-500">{errors.minMatureSize}</p>
-    )}
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.minMatureSize}
+                  </p>
+                )}
                 <input
-                  id='input-maxMatureSize'
+                  id="input-maxMatureSize"
                   type="number"
                   value={newPlant.maxMatureSize}
-                  onChange={(e) => handleInputChange('maxMatureSize', e.target.value)}
+                  onChange={e => {
+                    const value = Number(e.target.value);
+                    // Kiểm tra giá trị nhập vào
+                    if (value < 1 || value > 20000) {
+                      toast.error('Kích thước tối đa phải từ 1 đến 20000 cm');
+                      return; // Dừng lại nếu giá trị không hợp lệ
+                    }
+                    setNewPlant(prev => ({
+                      ...prev,
+                      maxMatureSize: value
+                    }));
+                    validateField('maxMatureSize', value); // Gọi validation
+                  }}
+                  min={1} // Giới hạn tối thiểu
+                  max={20000} // Giới hạn tối đa
                   className="w-1/2 rounded border p-2"
                   placeholder="Tối đa"
-                   
                 />
                 {errors.maxMatureSize && (
-      <p className="mt-1 text-sm text-red-500">{errors.maxMatureSize}</p>
-    )}
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.maxMatureSize}
+                  </p>
+                )}
               </div>
             </div>
 
@@ -951,9 +1074,9 @@ const isValidUrl = (url: string) => {
                 Độ ẩm <span className="text-red-500">*</span>
               </label>
               <select
-              id='input-humidityRange'
+                id="input-humidityRange"
                 value={newPlant.humidityRange}
-                onChange={e =>{
+                onChange={e => {
                   setNewPlant(prev => ({
                     ...prev,
                     humidityRange: e.target.value as
@@ -967,7 +1090,6 @@ const isValidUrl = (url: string) => {
                   validateField('humidityRange', e.target.value);
                 }}
                 className="w-full rounded border p-2"
-                 
               >
                 <option value="NONE">Không</option>
                 <option value="VERY_LOW">Rất thấp</option>
@@ -977,8 +1099,10 @@ const isValidUrl = (url: string) => {
                 <option value="VERY_HIGH">Rất cao</option>
               </select>
               {errors.humidityRange && (
-                  <p className="mt-1 text-sm text-red-500">{errors.humidityRange}</p>
-                )}
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.humidityRange}
+                </p>
+              )}
             </div>
 
             {/* Yêu cầu ánh sáng */}
@@ -987,9 +1111,9 @@ const isValidUrl = (url: string) => {
                 Yêu cầu ánh sáng <span className="text-red-500">*</span>
               </label>
               <select
-              id='input-lightRequirement'
+                id="input-lightRequirement"
                 value={newPlant.lightRequirement}
-                onChange={e =>{
+                onChange={e => {
                   setNewPlant(prev => ({
                     ...prev,
                     lightRequirement: e.target.value as
@@ -1003,7 +1127,6 @@ const isValidUrl = (url: string) => {
                   validateField('lightRequirement', e.target.value);
                 }}
                 className="w-full rounded border p-2"
-                 
               >
                 <option value="NONE">Không</option>
                 <option value="VERY_LOW">Rất thấp</option>
@@ -1013,8 +1136,10 @@ const isValidUrl = (url: string) => {
                 <option value="VERY_HIGH">Rất cao</option>
               </select>
               {errors.lightRequirement && (
-                  <p className="mt-1 text-sm text-red-500">{errors.lightRequirement}</p>
-                )}
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.lightRequirement}
+                </p>
+              )}
             </div>
 
             {/* Duyệt nội dung */}
@@ -1023,31 +1148,34 @@ const isValidUrl = (url: string) => {
                 Duyệt nội dung <span className="text-red-500">*</span>
               </label>
               <select
-              id='input-approvedContent'
+                id="input-approvedContent"
                 value={newPlant.approved_content ? 'true' : 'false'}
-                onChange={(e) => handleInputChange('approved_content', e.target.value)}
+                onChange={e =>
+                  handleInputChange('approved_content', e.target.value)
+                }
                 className="w-full rounded border p-2"
-                 
               >
                 <option value="true">Đã duyệt</option>
                 <option value="false">Chưa duyệt</option>
               </select>
               {errors.approved_content && (
-                  <p className="mt-1 text-sm text-red-500">{errors.approved_content}</p>
+                <p className="mt-1 text-sm text-red-500">
+                  {errors.approved_content}
+                </p>
               )}
             </div>
 
             {/* Nút lưu và hủy */}
             <div className="flex gap-2">
               <button
-              id='btn-save'
+                id="btn-save"
                 type="submit"
                 className="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
               >
                 {isEdit ? 'Cập nhật' : 'Lưu'}
               </button>
               <button
-              id='btn-cancel'
+                id="btn-cancel"
                 type="button"
                 onClick={resetForm} // Gọi resetForm khi nhấn hủy
                 className="rounded bg-gray-500 px-4 py-2 text-white hover:bg-gray-600"
