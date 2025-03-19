@@ -5,6 +5,7 @@ import { plantService } from '../../../services/plantService';
 import { Plant, Category } from '../../../types/Model';
 import {categoryService} from '../../../services/categoryService';
 
+
 interface PlantTable {
   id: string; // UUID của cây trồng
   created_at: string; // Thời gian tạo
@@ -44,6 +45,9 @@ interface PlantTable {
     | 'HIGH'
     | 'VERY_HIGH'; // Mức độ ánh sáng theo ENUM LEVEL
     approved_content: boolean; // Xác nhận nội dung
+    Category:{
+      category_name: string
+    }
 }
 
 interface PlantColumn {
@@ -53,11 +57,12 @@ interface PlantColumn {
 }
 
 const PlantsManagement: React.FC = () => {
+  const [isEdit, setIsEdit] = useState(false); // Mặc định là false (thêm mới)
   const [Categories, setCategories] = useState<Category[]>([]);
   const [plants, setPlants] = useState<Plant[]>([]);
   const [showForm, setShowForm] = useState(false);
 
-  const [newPlant, setNewPlant] = useState<Omit<PlantTable, "id" | "created_at">>({
+  const [newPlant, setNewPlant] = useState<Omit<PlantTable, "id" | "created_at" | "Category">>({
     plant_name: "",
     scientific_name: "",
     image_url: [],
@@ -79,113 +84,145 @@ const PlantsManagement: React.FC = () => {
   });
 
   useEffect(() => {
-    async function fetchPlants() {
+    const fetchData = async () => {
       try {
-        const data = await plantService.getPlants();
-        setPlants(data);
-        console.log('data cây trông: ', data);
+        const [plants, categories] = await Promise.all([
+          plantService.getPlants(),
+          categoryService.getAllCategories()
+        ]);
+  
+        setPlants(plants);
+        setCategories(categories);
+  
+        console.log('data cây trồng: ', plants);
+        console.log('data danh mục: ', categories);
       } catch (error) {
-        console.error('Error fetching plants:', error);
+        console.error('Error fetching data:', error);
       }
-    }
-    fetchPlants();
+    };
+  
+    fetchData();
   }, []);
+  
 
-  useEffect(() => {
-    async function fetchCategories() {
-      try {
-        const categoryData = await categoryService.getAllCategories();
-        setCategories(categoryData);
-        console.log('data danh mục: ', categoryData);
-      } catch (error) {
-        console.error('Error fetching categories:', error);
-      }
+  const handleEdit = (id: string) => {
+    // set màn hinh kéo lên đầu trang
+    window.scrollTo(0, 0);
+
+    const plantToEdit = plants.find(plant => plant.id === id);
+    if (plantToEdit) {
+      const category = Categories.find(category => category.id === plantToEdit.category_id);
+      setNewPlant({
+        ...plantToEdit, // Sao chép tất cả thông tin của cây trồng
+        category_name: category?.category_name || "",
+      });
+      setIsEdit(true); // Đặt trạng thái chỉnh sửa
+      setShowForm(true); // Hiển thị form
     }
-    fetchCategories();
-  }, []);
-
-  // const handleEdit = (id: number) => {
-  //   const plantToEdit = plantData.find(plant => plant.id === id);
-  //   if (plantToEdit) {
-  //     setNewPlant({
-  //       name: plantToEdit.name,
-  //       scientificName: plantToEdit.scientificName,
-  //       image: plantToEdit.image,
-  //       overview: plantToEdit.overview,
-  //       characteristic: plantToEdit.characteristic,
-  //       function: plantToEdit.function,
-  //       meaning: plantToEdit.meaning,
-  //       difficulty_level: plantToEdit.difficulty_level,
-  //       soil_type: plantToEdit.soil_type,
-  //       category_id: plantToEdit.category_id,
-  //       habitatLocation: plantToEdit.habitatLocation,
-  //       minTemperature: plantToEdit.minTemperature,
-  //       maxTemperature: plantToEdit.maxTemperature,
-  //       minMatureSize: plantToEdit.minMatureSize,
-  //       maxMatureSize: plantToEdit.maxMatureSize,
-  //       humidityRange: plantToEdit.humidityRange,
-  //       lightRequirement: plantToEdit.lightRequirement,
-  //       approved_content: plantToEdit.approved_content
-  //     });
-  //     setShowAddForm(true);
-  //   }
-  // };
-  // const handleDelete = (id: number) => {
-  //   if (window.confirm('Bạn có chắc muốn xóa không?')) {
-  //     setPlantData(prev => prev.filter(plant => plant.id !== id));
-  //   }
-  // };
-
-  // const isValidUrl = (url: string) => {
-  //   try {
-  //     new URL(url);
-  //     return url.match(/\.(jpg|jpeg|png|gif|bmp|webp)$/i) !== null;
-  //   } catch (error) {
-  //     console.error(error);
-  //     return false;
-  //   }
-  // };
+  };
 
   const handleAddPlant = async () => {
     try {
-      console.log("Dữ liệu được gửi lên API:", newPlant); // Kiểm tra dữ liệu trước khi gửi
+      console.log("Dữ liệu được gửi lên API:", newPlant);
   
-      // Gọi API để tạo mới cây trồng
       const createdPlant = await plantService.createPlant(newPlant);
-  
-      console.log("Phản hồi từ API:", createdPlant); // Kiểm tra phản hồi từ API
+      console.log("Phản hồi từ API:", createdPlant);
   
       // Cập nhật state `plants` để hiển thị cây trồng mới trong bảng
       setPlants(prevPlants => [...prevPlants, createdPlant]);
   
       // Đóng form và reset form
-      setShowForm(false);
-      setNewPlant({
-        plant_name: "",
-        scientific_name: "",
-        image_url: [],
-        overview: [],
-        characteristic: [],
-        function: [],
-        meaning: [],
-        difficulty_level: "EASY",
-        soil_type: "LOAM",
-        category_id: "",
-        habitatLocation: "INDOOR",
-        minTemperature: 0,
-        maxTemperature: 0,
-        minMatureSize: 0,
-        maxMatureSize: 0,
-        humidityRange: "MEDIUM",
-        lightRequirement: "MEDIUM",
-        approved_content: false
-      });
+      resetForm();
   
-      // Hiển thị thông báo thành công (tuỳ chọn)
       alert("Cây trồng đã được thêm thành công!");
     } catch (error) {
       console.error('Error creating plant:', error);
       alert("Có lỗi xảy ra khi thêm cây trồng. Vui lòng thử lại!");
+    }
+  };
+  
+  const handleUpdatePlant = async () => {
+    try {
+      // Tạo một đối tượng mới chỉ chứa các trường hợp lệ
+      const updateData = {
+        plant_name: newPlant.plant_name,
+        scientific_name: newPlant.scientific_name,
+        overview: newPlant.overview,
+        characteristic: newPlant.characteristic,
+        function: newPlant.function,
+        meaning: newPlant.meaning,
+        image_url: newPlant.image_url,
+        difficulty_level: newPlant.difficulty_level,
+        soil_type: newPlant.soil_type,
+        category_id: newPlant.category_id, // Chỉ gửi category_id, không gửi Category hoặc category_name
+        habitatLocation: newPlant.habitatLocation,
+        minTemperature: newPlant.minTemperature,
+        maxTemperature: newPlant.maxTemperature,
+        minMatureSize: newPlant.minMatureSize,
+        maxMatureSize: newPlant.maxMatureSize,
+        humidityRange: newPlant.humidityRange,
+        lightRequirement: newPlant.lightRequirement,
+        approved_content: newPlant.approved_content,
+      };
+  
+      console.log("Dữ liệu được gửi lên API để cập nhật:", updateData);
+  
+      const updatedPlant = await plantService.updatePlant(newPlant.id, updateData);
+      console.log("Phản hồi từ API sau khi cập nhật:", updatedPlant);
+  
+      // Cập nhật state `plants` để hiển thị cây trồng đã cập nhật
+      setPlants(prevPlants =>
+        prevPlants.map(plant =>
+          plant.id === updatedPlant.id ? updatedPlant : plant
+        )
+      );
+  
+      // Đóng form và reset form
+      resetForm();
+  
+      alert("Cây trồng đã được cập nhật thành công!");
+    } catch (error) {
+      console.error('Error updating plant:', error);
+  
+      if (error.response) {
+        console.error("Phản hồi lỗi từ API:", error.response.data);
+        alert(`Lỗi từ API: ${error.response.data.message || "Vui lòng thử lại!"}`);
+      } else {
+        alert("Có lỗi xảy ra khi cập nhật cây trồng. Vui lòng thử lại!");
+      }
+    }
+  };
+
+  const resetForm = () => {
+    setNewPlant({
+      plant_name: "",
+      scientific_name: "",
+      image_url: [],
+      overview: [],
+      characteristic: [],
+      function: [],
+      meaning: [],
+      difficulty_level: "EASY",
+      soil_type: "LOAM",
+      category_id: "",
+      habitatLocation: "INDOOR",
+      minTemperature: 0,
+      maxTemperature: 0,
+      minMatureSize: 0,
+      maxMatureSize: 0,
+      humidityRange: "MEDIUM",
+      lightRequirement: "MEDIUM",
+      approved_content: false,
+    });
+    setIsEdit(false); // Đặt lại trạng thái chỉnh sửa
+    setShowForm(false); // Đóng form
+  };
+
+  const handleSubmit = async () => {
+    if (isEdit) {
+      await handleUpdatePlant(); // Cập nhật nếu đang ở chế độ chỉnh sửa
+    } else {
+      await handleAddPlant(); // Thêm mới nếu không phải chỉnh sửa
     }
   };
 
@@ -225,7 +262,13 @@ const PlantsManagement: React.FC = () => {
     },
     { key: "difficulty_level", title: "Độ khó" },
     { key: "soil_type", title: "Loại đất" },
-    { key: "category_id", title: "ID danh mục" },
+    {
+      key: "category_id",
+      title: "Tên danh mục",
+      render: (plant: PlantTable) => (
+        <span>{plant.category_id? plant.Category?.category_name : "Chưa xác định"}</span>
+      ),
+    },
     { key: "habitatLocation", title: "Vị trí sinh trưởng" },
     {
       key: "minTemperature",
@@ -270,10 +313,7 @@ const PlantsManagement: React.FC = () => {
     actions: [
       {
         label: 'Sửa',
-        onClick: plant => 
-          // handleEdit(plant.id)
-          {}
-        ,
+        onClick: plant => handleEdit(plant.id), // Gọi hàm handleEdit
         className: 'bg-blue-400 hover:bg-blue-600'
       },
       {
@@ -303,11 +343,13 @@ const PlantsManagement: React.FC = () => {
 
       {showForm && (
   <div className="mb-6 rounded-lg bg-white p-6 shadow-md">
-    <h2 className="mb-4 text-xl font-bold">Thêm cây mới</h2>
+    <h2 className="mb-4 text-xl font-bold">
+  {isEdit ? "Chỉnh sửa cây trồng" : "Thêm cây mới"}
+</h2>
     <form
       onSubmit={e => {
         e.preventDefault();
-        handleAddPlant();
+        handleSubmit();
       }}
     >
       {/* Tên cây trồng */}
@@ -580,12 +622,17 @@ const PlantsManagement: React.FC = () => {
           <input
             type="number"
             value={newPlant.minTemperature}
-            onChange={e =>
-              setNewPlant(prev => ({
-                ...prev,
-                minTemperature: Number(e.target.value)
-              }))
-            }
+            onChange={e => {
+              const value = Number(e.target.value);
+              if (value >= 0 && value <= 100) {
+                setNewPlant(prev => ({
+                  ...prev,
+                  minTemperature: value,
+                }));
+              }
+            }}
+            min={0}
+            max={100}
             className="w-1/2 rounded border p-2"
             placeholder="Tối thiểu"
             required
@@ -593,12 +640,17 @@ const PlantsManagement: React.FC = () => {
           <input
             type="number"
             value={newPlant.maxTemperature}
-            onChange={e =>
-              setNewPlant(prev => ({
-                ...prev,
-                maxTemperature: Number(e.target.value)
-              }))
-            }
+            onChange={e => {
+              const value = Number(e.target.value);
+              if (value >= 0 && value <= 100) {
+                setNewPlant(prev => ({
+                  ...prev,
+                  maxTemperature: value,
+                }));
+              }
+            }}
+            min={0}
+            max={100}
             className="w-1/2 rounded border p-2"
             placeholder="Tối đa"
             required
@@ -726,20 +778,20 @@ const PlantsManagement: React.FC = () => {
 
       {/* Nút lưu và hủy */}
       <div className="flex gap-2">
-        <button
-          type="submit"
-          className="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
-        >
-          Lưu
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowForm(false)}
-          className="rounded bg-gray-500 px-4 py-2 text-white hover:bg-gray-600"
-        >
-          Hủy
-        </button>
-      </div>
+  <button
+    type="submit"
+    className="rounded bg-green-500 px-4 py-2 text-white hover:bg-green-600"
+  >
+    {isEdit ? "Cập nhật" : "Lưu"}
+  </button>
+  <button
+    type="button"
+    onClick={resetForm} // Gọi resetForm khi nhấn hủy
+    className="rounded bg-gray-500 px-4 py-2 text-white hover:bg-gray-600"
+  >
+    Hủy
+  </button>
+</div>
     </form>
   </div>
 )};

@@ -18,14 +18,14 @@ export const plantService = {
   },
 
   // Thêm cây trồng mới
-  async createPlant(data: Omit<Plant, "id" | "created_at">): Promise<Plant> {
+  async createPlant(data: Omit<Plant, "id" | "created_at" | "Category">): Promise<Plant> {
     const response = await axios.post(PLANTS_API, data);
     return response.data;
   },
 
   // Cập nhật cây trồng
   async updatePlant(id: string, data: Partial<Plant>): Promise<Plant> {
-    const response = await axios.put(`${PLANTS_API}/${id}`, data);
+    const response = await axios.patch(`${PLANTS_API}/${id}`, data);
     return response.data;
   },
 
