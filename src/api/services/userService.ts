@@ -2,13 +2,14 @@
 import axios from "axios";
 import { Users } from "../../types";
 import { API_URL } from "../../config";
+import axiosInstance from "../axios/axiosConfig";
 
-const USER_API = `${API_URL}/users`; // Endpoint cho users
+const USER_API = "/users"; // Endpoint cho users đã có trong axiosInstance
 
   // Lấy danh sách tất cả users
   export const getUsers = async (): Promise<Users[]> => {
     try {
-      const response = await axios.get<Users[]>(USER_API);
+      const response = await axiosInstance.get<Users[]>(USER_API);
       return response.data;
     } catch (error) {
       console.error("Lỗi khi lấy danh sách users:", error);
@@ -19,7 +20,7 @@ const USER_API = `${API_URL}/users`; // Endpoint cho users
 // Lấy thông tin user theo ID
 export const getUserById = async (userId: string): Promise<Users> => {
   try {
-    const response = await axios.get<Users>(`${USER_API}/${userId}`);
+    const response = await axiosInstance.get<Users>(`${USER_API}/${userId}`);
     return response.data;
   } catch (error) {
     console.error("Lỗi khi lấy user:", error);
@@ -28,23 +29,10 @@ export const getUserById = async (userId: string): Promise<Users> => {
 };
 
 // Tạo user mới
-export const createUser = async (userData: Omit<Users, 'id'>) => {
+export const createUser = async (userData: Omit<Users, 'id'>): Promise<Users> => {
   try {
-    const response = await fetch(`${API_URL}/users`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(userData),
-    });
-
-    const result = await response.json();
-
-    if (!response.ok) {
-      throw new Error(result.message || 'Có lỗi xảy ra khi tạo user');
-    }
-
-    return result;
+    const response = await axiosInstance.post<Users>(USER_API, userData);
+    return response.data;
   } catch (error: any) {
     console.error('Lỗi API createUser:', error.message);
     throw new Error(error.message);
@@ -56,7 +44,7 @@ export const createUser = async (userData: Omit<Users, 'id'>) => {
 // Cập nhật user theo ID
 export const updateUser = async (userId: string, userData: Partial<Users>): Promise<Users> => {
   try {
-    const response = await axios.patch<Users>(`${USER_API}/${userId}`, userData);
+    const response = await axiosInstance.patch<Users>(`${USER_API}/${userId}`, userData);
 
     if (response.status !== 200) {
       throw new Error(`Lỗi cập nhật user: ${response.statusText}`);
@@ -85,7 +73,7 @@ export const updateUser = async (userId: string, userData: Partial<Users>): Prom
 // Xóa user theo ID
 export const deleteUser = async (userId: string): Promise<boolean> => {
   try {
-    await axios.delete(`${USER_API}/${userId}`);
+    await axiosInstance.delete(`${USER_API}/${userId}`);
     return true; // Trả về true nếu xóa thành công
   } catch (error) {
     console.error("Lỗi khi xóa user:", error);

@@ -338,10 +338,7 @@ const PlantsManagement: React.FC = () => {
 
   const handleAddPlant = async () => {
     try {
-      // console.log('Dữ liệu được gửi lên API:', newPlant);
 
-      // // const createdPlant = await plantService.createPlant(newPlant);
-      // // console.log('Phản hồi từ API:', createdPlant);
       console.log('Before API call:', newPlant);
       const createdPlant = await plantService.createPlant(newPlant);
       console.log('After API call:', createdPlant);
@@ -525,7 +522,7 @@ const PlantsManagement: React.FC = () => {
         <img
           src={plant.image_url?.[0] || '/defaultPlant.png'}
           alt={plant.plant_name}
-          className="h-40 !w-32 rounded-2xl object-cover"
+          className="h-48 w-44 rounded-2xl object-cover"
         />
       )
     },
@@ -706,7 +703,7 @@ const PlantsManagement: React.FC = () => {
             {/* URL hình ảnh */}
             <div className="mb-3">
               <label className="mb-1 block text-sm font-medium">
-                URL hình ảnh (cách nhau bằng dấu phẩy){' '}
+                URL hình ảnh
                 <span className="text-red-500">*</span>
               </label>
               <input
@@ -724,7 +721,7 @@ const PlantsManagement: React.FC = () => {
             {/* Mô tả tổng quan */}
             <div className="mb-3">
               <label className="mb-1 block text-sm font-medium">
-                Mô tả tổng quan (cách nhau bằng dấu phẩy){' '}
+                Mô tả tổng quan
                 <span className="text-red-500">*</span>
               </label>
               <input
@@ -742,7 +739,7 @@ const PlantsManagement: React.FC = () => {
             {/* Đặc điểm */}
             <div className="mb-3">
               <label className="mb-1 block text-sm font-medium">
-                Đặc điểm (cách nhau bằng dấu phẩy){' '}
+                Đặc điểm 
                 <span className="text-red-500">*</span>
               </label>
               <input
@@ -764,7 +761,7 @@ const PlantsManagement: React.FC = () => {
             {/* Công dụng */}
             <div className="mb-3">
               <label className="mb-1 block text-sm font-medium">
-                Công dụng (cách nhau bằng dấu phẩy){' '}
+                Công dụng
                 <span className="text-red-500">*</span>
               </label>
               <input
@@ -782,7 +779,7 @@ const PlantsManagement: React.FC = () => {
             {/* Ý nghĩa */}
             <div className="mb-3">
               <label className="mb-1 block text-sm font-medium">
-                Ý nghĩa (cách nhau bằng dấu phẩy){' '}
+                Ý nghĩa
                 <span className="text-red-500">*</span>
               </label>
               <input
