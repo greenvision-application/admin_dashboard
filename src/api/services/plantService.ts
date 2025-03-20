@@ -1,6 +1,6 @@
 import axios from "axios";
-import { API_URL } from "../config";
-import { Plant } from "../types/Model";
+import { API_URL } from "../../config";
+import { Plant } from "../../types";
 
 const PLANTS_API = `${API_URL}/plants`;
 

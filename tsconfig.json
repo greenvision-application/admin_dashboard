@@ -14,7 +14,7 @@
       "widgets/*": ["src/widgets/*"],
       "pages/*": ["src/pages/*"],
       "app/*": ["src/app/*"],
-      "apis/*": ["src/apis/*"],
+      "apis/*": ["src/api/*"],
       "components/*": ["src/components/*"],
       "utils/*": ["src/utils/*"],
       "assets/*": ["src/assets/*"],

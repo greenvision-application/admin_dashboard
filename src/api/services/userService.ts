@@ -1,7 +1,7 @@
 // services/userService.ts
 import axios from "axios";
-import { Users } from "../types/Model";
-import { API_URL } from "../config";
+import { Users } from "../../types";
+import { API_URL } from "../../config";
 
 const USER_API = `${API_URL}/users`; // Endpoint cho users
 

@@ -1,19 +1,13 @@
 import { useState, useEffect } from 'react';
-// import {User} from '../../../types/Model';
-import { Table } from '../../../components';
-import type { ActionColumn } from '../../../components';
-import provinces from '../../../data/provinces.json';
-import { District, Ward } from '../../../types/Model';
-import {
-  getUsers,
-  updateUser,
-  createUser
-} from '../../../services/userService';
-import { getRoles } from '../../../services/roleService';
-import { Role } from '../../../types/Model';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
+
+import { Table } from '../../../components';
+import type { ActionColumn } from '../../../components';
+import provinces from '../../../data/provinces.json';
+import { Role, District, Ward } from '../../../types';
+import { getUsers, updateUser, createUser, getRoles} from '../../../api';
 
 // Định nghĩa interface dựa trên dữ liệu API thực tế
 interface UserTable {
@@ -65,16 +59,6 @@ const UserList: React.FC = () => {
 
   const [userData, setUserData] = useState<UserTable[]>([]);
   const [showForm, setShowForm] = useState(false);
-  // const [newUser, setNewUser] = useState({
-  //   username: '',
-  //   email: '',
-  //   role_id: '',
-  //   password: '',
-  //   role: '',
-  //   ward: '',
-  //   district: '',
-  //   province: ''
-  // });
   const [newUser, setNewUser] = useState<NewUser>({
     id: '',
     username: '',

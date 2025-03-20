@@ -1,7 +1,7 @@
 // services/roleService
 import axios from "axios";
-import { Role } from "../types/Model";
-import { API_URL } from "../config";
+import { Role } from "../../types";
+import { API_URL } from "../../config";
 
 const ROLE_API = `${API_URL}/roles`; // Endpoint cho roles
 

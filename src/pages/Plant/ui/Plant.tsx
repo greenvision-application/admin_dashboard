@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
 import React from 'react';
-import { Table } from '../../../components';
-import type { ActionColumn } from '../../../components';
-import { plantService } from '../../../services/plantService';
-import { Plant, Category } from '../../../types/Model';
-import { categoryService } from '../../../services/categoryService';
-import { Briefcase, CircleCheckBig, CircleX } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
-import { PlantDetailsPopup } from '../../../components/detailsPlant';
+
+import { Table, PlantDetailsPopup } from '../../../components';
+import type { ActionColumn  } from '../../../components';
+import type { Plant, Category } from '../../../types';
+import { plantService, categoryService } from '../../../api';
+import { CircleCheckBig, CircleX } from 'lucide-react';
 
 export interface PlantTable {
   id: string; // UUID của cây trồng
