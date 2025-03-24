@@ -1,5 +1,11 @@
 import { useState, useEffect } from 'react';
-import { BotMessageSquare, Moon, Search, Sun, TreeDeciduous } from 'lucide-react';
+import {
+  BotMessageSquare,
+  Moon,
+  Search,
+  Sun,
+  TreeDeciduous
+} from 'lucide-react';
 import { Button, Input } from '../../../components';
 import { LogOut, LogIn } from 'lucide-react';
 import { logout } from '../../../api';
@@ -11,7 +17,6 @@ const Header = () => {
   const [isHovered, setIsHovered] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-
   useEffect(() => {
     // Kiểm tra token khi component được render
     const token = Cookies.get('token'); // Hoặc Cookies.get('token')
@@ -22,17 +27,17 @@ const Header = () => {
     // dùng swall để người dùng confirm
     Swal.fire({
       title: 'Bạn thật sự muốn đăng xuất?',
-      text: "Bạn không thể hoàn tác sau khi đăng xuất!",
+      text: 'Bạn không thể hoàn tác sau khi đăng xuất!',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
       confirmButtonText: 'Đăng xuất!',
       cancelButtonText: 'Hủy'
-    }).then((result) => {
+    }).then(result => {
       if (result.isConfirmed) {
-        logout();        
-        window.location.href = "/login"; // Chuyển hướng đến trang đăng nhập
+        logout();
+        window.location.href = '/login'; // Chuyển hướng đến trang đăng nhập
       }
     });
   };
@@ -78,16 +83,21 @@ const Header = () => {
 
           {/* AI Bot */}
           <Button
+            id='btn-logout'
             variant="icon"
             className="text-primary relative"
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            onClick={isAuthenticated ? handleLogout : () => (window.location.href = "/login")}
+            onClick={
+              isAuthenticated
+                ? handleLogout
+                : () => (window.location.href = '/login')
+            }
           >
             {isAuthenticated ? <LogOut size={24} /> : <LogIn size={24} />}
             {isHovered && (
-              <span className="absolute -top-5 mt-0 text-sm text-green-400 px-2 py-1 rounded w-20">
-               {isAuthenticated ? 'đăng xuất' : 'đăng nhập'}
+              <span className="absolute -top-5 mt-0 w-20 rounded px-2 py-1 text-sm text-green-400">
+                {isAuthenticated ? 'đăng xuất' : 'đăng nhập'}
               </span>
             )}
             <span className="sr-only">Logout</span>
@@ -100,14 +110,11 @@ const Header = () => {
               <p className="text-muted-foreground text-xs">Admin</p>
             </div>
             <div className="h-14 w-14 overflow-hidden rounded-full border-2 border-green-500 shadow-lg transition-transform duration-300 hover:scale-105">
-              
               <img
-                // src={'https://avatar.iran.liara.run/public/45'}
                 src="https://api.dicebear.com/8.x/lorelei-neutral/svg?seed=John"
                 alt="User avatar"
                 className="h-full w-full object-cover transition-opacity duration-300 hover:opacity-90"
               />
-              
             </div>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { TreeDeciduous, TreePalm, TreePine, Trees } from 'lucide-react';
+import Cookies from 'js-cookie';
 
 const images = [
   '/Onboard04.png',
@@ -17,6 +18,13 @@ const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const [currentImage, setCurrentImage] = useState(images[0]);
   const [rotateClass, setRotateClass] = useState('rotate-4'); // Mặc định nghiêng phải
+
+  useEffect(() => {
+    const token = Cookies.get('token');
+    if (token) {
+      navigate('/'); // Nếu đã có token, chuyển hướng về trang chính
+    }
+  }, [navigate]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -63,7 +71,6 @@ const LoginPage: React.FC = () => {
     <>
       <div className="flex flex-col items-center justify-center p-4">
         <p className="my-2 py-4 text-4xl font-bold text-green-800">
-          
           CHÀO MỪNG ĐẾN VỚI HỆ THỐNG QUẢN LÝ CÂY TRỒNG
         </p>
         <div className="flex w-1/2 justify-between text-green-600">
@@ -86,6 +93,7 @@ const LoginPage: React.FC = () => {
             <div className="">
               <p className="py-2 font-semibold">Tên đăng nhập hoặc Email:</p>
               <input
+              id='input-login-usernameOrEmail'
                 className="w-11/12 border-b border-neutral-400 p-2 outline-none hover:cursor-pointer hover:rounded-lg hover:bg-neutral-100"
                 placeholder="Nhập tên hoặc Email"
                 type="text"
@@ -102,6 +110,7 @@ const LoginPage: React.FC = () => {
             <div className="">
               <p className="py-2 font-semibold">Mật khẩu:</p>
               <input
+                id="input-login-password"
                 placeholder="Nhập mật khẩu ..."
                 type="password"
                 name="password"
@@ -116,6 +125,7 @@ const LoginPage: React.FC = () => {
             </div>
             <div className="flex justify-center p-4 pt-16">
               <button
+              id='btn-login'
                 className="w-1/2 rounded-lg bg-green-700 py-3 font-semibold text-white transition hover:cursor-pointer hover:bg-green-600"
                 type="submit"
               >

@@ -47,7 +47,6 @@ axiosInstance.interceptors.response.use(
           }
         });  
       }
-      // Sử dụng SweetAlert2 để hiển thị thông báo xác nhận đăng nhập
     }
     return Promise.reject(error);
   }

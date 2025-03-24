@@ -15,7 +15,6 @@ export const login = async (usernameOrEmail: string, password: string): Promise<
     console.log("token",tokenData);
      
      // Lưu token vào cookies
-    // Cookies.set('token', tokenData, { expires: 30 / (24 * 60 * 60) }); // expires: 30 giây
     Cookies.set('token', tokenData, { expires: 1 }); // expires: 1 là 1 ngày
     return tokenData;
   } catch (error: any) {
