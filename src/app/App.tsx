@@ -1,5 +1,4 @@
 import { Route, Routes } from 'react-router-dom'; // Thêm import BrowserRouter
-import React from 'react';
 import Layout from './Layout';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';

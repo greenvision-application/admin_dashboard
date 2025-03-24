@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BotMessageSquare, Moon, Search, Sun } from 'lucide-react';
+import { BotMessageSquare, Moon, Search, Sun, TreeDeciduous } from 'lucide-react';
 import { Button, Input } from '../../../components';
 import { LogOut, LogIn } from 'lucide-react';
 import { logout } from '../../../api';
@@ -28,6 +28,7 @@ const Header = () => {
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
       confirmButtonText: 'Đăng xuất!',
+      cancelButtonText: 'Hủy'
     }).then((result) => {
       if (result.isConfirmed) {
         logout();        
