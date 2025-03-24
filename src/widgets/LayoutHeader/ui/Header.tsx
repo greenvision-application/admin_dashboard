@@ -3,6 +3,7 @@ import { BotMessageSquare, Moon, Search, Sun } from 'lucide-react';
 import { Button, Input } from '../../../components';
 import { LogOut, LogIn } from 'lucide-react';
 import { logout } from '../../../api';
+import Swal from 'sweetalert2';
 import Cookies from 'js-cookie'; // Thư viện đăng ký cookies
 
 const Header = () => {
@@ -18,8 +19,21 @@ const Header = () => {
   }, []);
 
   const handleLogout = () => {
-    logout();
-    window.location.href = "/login"; // Chuyển hướng đến trang đăng nhập
+    // dùng swall để người dùng confirm
+    Swal.fire({
+      title: 'Bạn thật sự muốn đăng xuất?',
+      text: "Bạn không thể hoàn tác sau khi đăng xuất!",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Đăng xuất!',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        logout();        
+        window.location.href = "/login"; // Chuyển hướng đến trang đăng nhập
+      }
+    });
   };
 
   return (
