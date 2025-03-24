@@ -233,14 +233,6 @@ const UserList: React.FC = () => {
 
     // Validate real-time
   validateField(field, value);
-
-    // Reset error for the field
-    // if (errors[field]) {
-    //   setErrors(prevErrors => ({
-    //     ...prevErrors,
-    //     [field]: ''
-    //   }));
-    // }
   };
 
   const handleDisable = async (id: string) => {
@@ -321,8 +313,6 @@ const UserList: React.FC = () => {
 
         // Lấy thông tin role mới
         const updatedRole = roles.find(r => r.id === newUser.role_id);
-
-        // Cập nhật lại danh sách user sau khi chỉnh sửa
         // Cập nhật lại danh sách user với role mới
         setUserData(prev =>
           prev.map(user =>
@@ -374,9 +364,9 @@ const UserList: React.FC = () => {
     {
       key: 'username',
       title: 'Tên người dùng',
-      render: user => <span>{user.username || 'N/A'}</span>
+      render: user => <span>{user?.username || 'N/A'}</span>
     },
-    { key: 'email', title: 'Email' },
+    { key: 'email', title: 'Email', render: user => <span>{user?.email || 'N/A'}</span> },
     {
       key: 'address',
       title: 'Địa chỉ',
@@ -519,6 +509,7 @@ const UserList: React.FC = () => {
     //   }));
     // }
   };
+
   const resetUserForm = () => {
     if (edit) {
       // Chỉ reset nếu đang chỉnh sửa

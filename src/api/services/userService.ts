@@ -1,7 +1,6 @@
 // services/userService.ts
 import axios from "axios";
 import { Users } from "../../types";
-import { API_URL } from "../../config";
 import axiosInstance from "../axios/axiosConfig";
 
 const USER_API = "/users"; // Endpoint cho users đã có trong axiosInstance

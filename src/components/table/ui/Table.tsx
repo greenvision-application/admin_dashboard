@@ -26,7 +26,7 @@ const Table = <T,>({
           {data.map((item, index) => (
             <tr key={index} className="border-t border-neutral-400 hover:bg-green-50">
               {columns.map(col => (
-                <td key={col.key as string} className="p-2 border-r border-neutral-300 align-top ">
+                <td key={col.key as string} className="p-2 border-r border-neutral-300 align-top break-words whitespace-pre-wrap">
                   {col.render
                     ? col.render(item)
                     : (item[col.key] as React.ReactNode)}
