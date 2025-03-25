@@ -1,19 +1,13 @@
 import { useState, useEffect } from 'react';
-// import {User} from '../../../types/Model';
-import { Table } from '../../../components';
-import type { ActionColumn } from '../../../components';
-import provinces from '../../../data/provinces.json';
-import { District, Ward } from '../../../types/Model';
-import {
-  getUsers,
-  updateUser,
-  createUser
-} from '../../../services/userService';
-import { getRoles } from '../../../services/roleService';
-import { Role } from '../../../types/Model';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
+
+import { Table } from '../../../components';
+import type { ActionColumn } from '../../../components';
+import provinces from '../../../data/provinces.json';
+import { Role, District, Ward } from '../../../types';
+import { getUsers, updateUser, createUser, getRoles} from '../../../api';
 
 // Định nghĩa interface dựa trên dữ liệu API thực tế
 interface UserTable {
@@ -65,16 +59,6 @@ const UserList: React.FC = () => {
 
   const [userData, setUserData] = useState<UserTable[]>([]);
   const [showForm, setShowForm] = useState(false);
-  // const [newUser, setNewUser] = useState({
-  //   username: '',
-  //   email: '',
-  //   role_id: '',
-  //   password: '',
-  //   role: '',
-  //   ward: '',
-  //   district: '',
-  //   province: ''
-  // });
   const [newUser, setNewUser] = useState<NewUser>({
     id: '',
     username: '',
@@ -249,14 +233,6 @@ const UserList: React.FC = () => {
 
     // Validate real-time
   validateField(field, value);
-
-    // Reset error for the field
-    // if (errors[field]) {
-    //   setErrors(prevErrors => ({
-    //     ...prevErrors,
-    //     [field]: ''
-    //   }));
-    // }
   };
 
   const handleDisable = async (id: string) => {
@@ -337,8 +313,6 @@ const UserList: React.FC = () => {
 
         // Lấy thông tin role mới
         const updatedRole = roles.find(r => r.id === newUser.role_id);
-
-        // Cập nhật lại danh sách user sau khi chỉnh sửa
         // Cập nhật lại danh sách user với role mới
         setUserData(prev =>
           prev.map(user =>
@@ -390,9 +364,9 @@ const UserList: React.FC = () => {
     {
       key: 'username',
       title: 'Tên người dùng',
-      render: user => <span>{user.username || 'N/A'}</span>
+      render: user => <span>{user?.username || 'N/A'}</span>
     },
-    { key: 'email', title: 'Email' },
+    { key: 'email', title: 'Email', render: user => <span>{user?.email || 'N/A'}</span> },
     {
       key: 'address',
       title: 'Địa chỉ',
@@ -535,6 +509,7 @@ const UserList: React.FC = () => {
     //   }));
     // }
   };
+
   const resetUserForm = () => {
     if (edit) {
       // Chỉ reset nếu đang chỉnh sửa

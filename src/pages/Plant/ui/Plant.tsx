@@ -1,15 +1,14 @@
 import { useState, useEffect } from 'react';
 import React from 'react';
-import { Table } from '../../../components';
-import type { ActionColumn } from '../../../components';
-import { plantService } from '../../../services/plantService';
-import { Plant, Category } from '../../../types/Model';
-import { categoryService } from '../../../services/categoryService';
-import { Briefcase, CircleCheckBig, CircleX } from 'lucide-react';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
-import { PlantDetailsPopup } from '../../../components/detailsPlant';
+
+import { Table, PlantDetailsPopup } from '../../../components';
+import type { ActionColumn  } from '../../../components';
+import type { Plant, Category } from '../../../types';
+import { plantService, categoryService } from '../../../api';
+import { CircleCheckBig, CircleX } from 'lucide-react';
 
 export interface PlantTable {
   id: string; // UUID của cây trồng
@@ -250,10 +249,11 @@ const PlantsManagement: React.FC = () => {
       field === 'function' ||
       field === 'meaning'
     ) {
-      // Tách chuỗi nhập vào thành mảng các phần tử
-      newValue = value.split(',').map((item: string) => item.trim());
-      // Loại bỏ các phần tử rỗng
-      newValue = newValue.filter((item: string) => item.trim() !== '');
+      
+      // Tách chuỗi nhập vào thành mảng các phần tử dựa trên dấu xuống dòng
+    newValue = value.split('\n').map((item: string) => item);
+    // Loại bỏ các phần tử rỗng (nếu có)
+    // newValue = newValue.filter((item: string) => item.trim() !== '');
     }
     // Xử lý đặc biệt cho trường approved_content
     if (field === 'approved_content') {
@@ -305,11 +305,11 @@ const PlantsManagement: React.FC = () => {
     }
     if (newPlant.minMatureSize < 1 || newPlant.minMatureSize > 100) {
       newErrors.minMatureSize =
-        'Kích thước trưởng thành tối thiểu phải từ 0 đến 100 cm';
+        'Kích thước trưởng thành tối thiểu phải từ 1 đến 100 cm';
     }
     if (newPlant.maxMatureSize < 1 || newPlant.maxMatureSize > 20000) {
       newErrors.maxMatureSize =
-        'Kích thước trưởng thành tối đa phải từ 0 đến 200 m';
+        'Kích thước trưởng thành tối đa phải từ 1 đến 200 m';
     }
 
     setErrors(newErrors);
@@ -339,10 +339,7 @@ const PlantsManagement: React.FC = () => {
 
   const handleAddPlant = async () => {
     try {
-      // console.log('Dữ liệu được gửi lên API:', newPlant);
 
-      // // const createdPlant = await plantService.createPlant(newPlant);
-      // // console.log('Phản hồi từ API:', createdPlant);
       console.log('Before API call:', newPlant);
       const createdPlant = await plantService.createPlant(newPlant);
       console.log('After API call:', createdPlant);
@@ -526,7 +523,7 @@ const PlantsManagement: React.FC = () => {
         <img
           src={plant.image_url?.[0] || '/defaultPlant.png'}
           alt={plant.plant_name}
-          className="h-40 !w-32 rounded-2xl object-cover"
+          className="h-48 w-44 rounded-2xl object-cover"
         />
       )
     },
@@ -553,7 +550,7 @@ const PlantsManagement: React.FC = () => {
         <span>
           {plant.characteristic.map((item, index) => (
             <React.Fragment key={index}>
-              {item}
+              {item}.
               <br />
             </React.Fragment>
           ))}
@@ -707,7 +704,7 @@ const PlantsManagement: React.FC = () => {
             {/* URL hình ảnh */}
             <div className="mb-3">
               <label className="mb-1 block text-sm font-medium">
-                URL hình ảnh (cách nhau bằng dấu phẩy){' '}
+                URL hình ảnh
                 <span className="text-red-500">*</span>
               </label>
               <input
@@ -725,15 +722,16 @@ const PlantsManagement: React.FC = () => {
             {/* Mô tả tổng quan */}
             <div className="mb-3">
               <label className="mb-1 block text-sm font-medium">
-                Mô tả tổng quan (cách nhau bằng dấu phẩy){' '}
+                Mô tả tổng quan
                 <span className="text-red-500">*</span>
               </label>
-              <input
+              <textarea
                 id="input-overview"
-                type="text"
-                value={newPlant.overview.join(', ')}
+                value={newPlant.overview.join('\n')}
                 onChange={e => handleInputChange('overview', e.target.value)}
+                
                 className="w-full rounded border p-2"
+                rows={4}
               />
               {errors.overview && (
                 <p className="mt-1 text-sm text-red-500">{errors.overview}</p>
@@ -743,17 +741,18 @@ const PlantsManagement: React.FC = () => {
             {/* Đặc điểm */}
             <div className="mb-3">
               <label className="mb-1 block text-sm font-medium">
-                Đặc điểm (cách nhau bằng dấu phẩy){' '}
+                Đặc điểm 
                 <span className="text-red-500">*</span>
               </label>
-              <input
+              <textarea
                 id="input-characteristic"
-                type="text"
-                value={newPlant.characteristic.join(', ')}
+                
+                value={newPlant.characteristic.join('\n')}
                 onChange={e =>
                   handleInputChange('characteristic', e.target.value)
                 }
                 className="w-full rounded border p-2"
+                rows={4}
               />
               {errors.characteristic && (
                 <p className="mt-1 text-sm text-red-500">
@@ -765,15 +764,15 @@ const PlantsManagement: React.FC = () => {
             {/* Công dụng */}
             <div className="mb-3">
               <label className="mb-1 block text-sm font-medium">
-                Công dụng (cách nhau bằng dấu phẩy){' '}
+                Công dụng
                 <span className="text-red-500">*</span>
               </label>
-              <input
-                id="input-function"
-                type="text"
-                value={newPlant.function.join(', ')}
+              <textarea
+                
+                value={newPlant.function.join('\n')}
                 onChange={e => handleInputChange('function', e.target.value)}
                 className="w-full rounded border p-2"
+                rows={4}
               />
               {errors.function && (
                 <p className="mt-1 text-sm text-red-500">{errors.function}</p>
@@ -783,15 +782,15 @@ const PlantsManagement: React.FC = () => {
             {/* Ý nghĩa */}
             <div className="mb-3">
               <label className="mb-1 block text-sm font-medium">
-                Ý nghĩa (cách nhau bằng dấu phẩy){' '}
+                Ý nghĩa
                 <span className="text-red-500">*</span>
               </label>
-              <input
-                id="input-meaning"
-                type="text"
-                value={newPlant.meaning.join(', ')}
+              <textarea
+                id="input-meaning"              
+                value={newPlant.meaning.join('\n')}
                 onChange={e => handleInputChange('meaning', e.target.value)}
                 className="w-full rounded border p-2"
+                rows={4}
               />
               {errors.meaning && (
                 <p className="mt-1 text-sm text-red-500">{errors.meaning}</p>

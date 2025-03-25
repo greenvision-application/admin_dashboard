@@ -1,6 +1,6 @@
 import axios from "axios";
-import { Category } from "../types/Model";
-import { API_URL } from "../config";
+import { Category } from "../../types";
+import { API_URL } from "../../config";
 
 const CATEGORY_API = `${API_URL}/categories`;
 
