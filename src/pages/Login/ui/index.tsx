@@ -15,6 +15,7 @@ const images = [
 ];
 
 const LoginPage: React.FC = () => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const [currentImage, setCurrentImage] = useState(images[0]);
   const [rotateClass, setRotateClass] = useState('rotate-4'); // Mặc định nghiêng phải
@@ -57,12 +58,16 @@ const LoginPage: React.FC = () => {
         .min(8, 'Mật khẩu phải có ít nhất 8 ký tự.')
     }),
     onSubmit: async values => {
+      if (isSubmitting) return;
+      setIsSubmitting(true);
       try {
         await login(values.usernameOrEmail, values.password);
         toast.success('Đăng nhập thành công');
         navigate('/');
       } catch (err: any) {
         toast.error('Thông tin đăng nhập không đúng');
+      }finally {
+        setIsSubmitting(false);
       }
     }
   });
@@ -126,8 +131,9 @@ const LoginPage: React.FC = () => {
             <div className="flex justify-center p-4 pt-16">
               <button
               id='btn-login'
-                className="w-1/2 rounded-lg bg-green-700 py-3 font-semibold text-white transition hover:cursor-pointer hover:bg-green-600"
-                type="submit"
+              className={`w-1/2 rounded-lg py-3 font-semibold text-white transition ${
+                isSubmitting ? 'bg-gray-500 cursor-not-allowed' : 'bg-green-700 hover:bg-green-600'}`}
+              type="submit"
               >
                 Đăng nhập
               </button>
