@@ -62,23 +62,23 @@ export function setupInterceptorsTo(
 setupInterceptorsTo(AXIOS);
 
 // 5. Hàm dùng gọi API
-interface RequestOptions {
+interface RequestOptions<T> {
   method: AxiosRequestConfig['method'];
   headers?: Record<string, string>;
   url: string;
   data?: unknown;
-  onSuccess?: (data: unknown) => void;
+  onSuccess?: (data: T) => void;
   onError?: (error: unknown) => void;
 }
 
-const request = async ({
+const request = async <T>({
   method,
   headers = {},
   url,
   data,
   onSuccess,
   onError
-}: RequestOptions) => {
+}: RequestOptions<T>): Promise<T> => {
   try {
     const response = await AXIOS({
       method,
@@ -87,8 +87,8 @@ const request = async ({
       data
     });
 
-    onSuccess?.(response.data);
-    return response.data;
+    onSuccess?.(response.data as T);
+    return response.data as T;
   } catch (error) {
     const errorMessage = axios.isAxiosError(error)
       ? error.response?.data || 'Unknown Axios error'

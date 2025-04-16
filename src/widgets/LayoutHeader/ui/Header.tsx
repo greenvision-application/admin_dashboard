@@ -6,7 +6,7 @@ const Header = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   return (
-    <header className="fixed top-0 right-0 left-24 border-b border-gray-300 bg-white">
+    <header className="sticky top-0 right-0 left-24 border-b border-gray-300 bg-white">
       <div className="flex h-20 items-center justify-between px-4 py-2">
         {/* Tittle Section */}
         <div>

@@ -27,7 +27,7 @@ const Sidebar = () => {
   ];
 
   return (
-    <div className="fixed flex h-screen w-24 flex-col items-center justify-between bg-black py-4">
+    <div className="flex h-screen w-24 flex-col items-center justify-between bg-black py-4">
       <button
         onClick={() => {
           setActive('');
