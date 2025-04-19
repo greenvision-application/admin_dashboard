@@ -10,8 +10,8 @@ const Button: React.FC<ButtonProps> = ({
   const baseClasses =
     'flex items-center justify-center transition-colors focus:outline-none';
   const variantClasses = {
-    icon: 'h-14 w-14 rounded-xl hover:bg-green-500/20',
-    text: 'px-4 py-2 rounded-md text-gray-400 hover:text-green-500 hover:bg-green-500/20'
+    icon: 'h-14 w-14 rounded-xl',
+    text: 'px-4 py-2 rounded-md text-gray-400'
   };
 
   return (

@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react';
 
 type FetchOptions<T> = {
-  fetchFn: () => Promise<T>;
-  enabled?: boolean; // option để chủ động gọi
+  fetchFn: (
+    onSuccess?: (data: T) => void,
+    onError?: (error: unknown) => void
+  ) => Promise<T>;
+  enabled?: boolean;
 };
 
 export const useFetchData = <T>({
@@ -15,24 +18,24 @@ export const useFetchData = <T>({
 
   useEffect(() => {
     if (!enabled) {
-      console.log('[useFetchData] Fetch disabled, skipping...');
       return;
     }
 
     const fetchData = async () => {
-      console.log('[useFetchData] Starting fetch...');
       setIsLoading(true);
       try {
-        console.log('[useFetchData] Calling fetch function...');
-        const response = await fetchFn();
-        console.log('[useFetchData] Fetch successful, data:', response);
-        setData(response);
+        await fetchFn(
+          (data: T) => {
+            setData(data);
+          },
+          (error: unknown) => {
+            setError(error);
+          }
+        );
       } catch (err) {
-        console.log('[useFetchData] Fetch error:', err);
         setError(err);
       } finally {
-        console.log('[useFetchData] Fetch completed, setting loading to false');
-        // setIsLoading(false);
+        setIsLoading(false);
       }
     };
 
