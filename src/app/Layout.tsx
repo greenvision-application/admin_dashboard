@@ -3,11 +3,11 @@ import { Header, Sidebar } from '../widgets';
 
 const Layout = () => {
   return (
-    <div className="flex">
+    <div className="relative">
       <Sidebar />
-      <main className="flex flex-1 flex-col">
+      <main className="ml-24 flex h-screen flex-col">
         <Header />
-        <div className="flex-1">
+        <div className="flex-1 overflow-y-auto">
           <Outlet />
         </div>
         {/* <Footer /> */}
