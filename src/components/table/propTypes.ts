@@ -19,9 +19,11 @@ export interface Column<T> {
 }
 
 export interface Action<T> {
-  label: string;
+  label?: string;
+  id: string | number;
   onClick: (item: T) => void;
   className?: string;
+  icon?: React.ReactNode;
 }
 
 export interface ActionColumn<T> {

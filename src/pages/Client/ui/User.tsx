@@ -376,6 +376,7 @@ const User = () => {
   const actions: Action<User>[] = [
     {
       label: 'Sửa',
+      id: 'edit',
       onClick: user => {
         console.log('Edit user:', user);
       },
@@ -383,6 +384,7 @@ const User = () => {
     },
     {
       label: 'Xóa',
+      id: 'delete',
       onClick: user => {
         setUsers(users.filter(u => u.id !== user.id));
       },

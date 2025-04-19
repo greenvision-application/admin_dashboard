@@ -180,16 +180,88 @@ const Table = <T extends Record<string, any>>({
       <div className="m-3 flex items-center justify-between">
         {/* Delete Selected Button */}
         <div className="flex items-center">
-          {enableRowSelection && hasSelectedRows && (
-            <Button
-              onClick={handleDeleteSelected}
-              className="flex items-center justify-center rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none"
-            >
-              <Trash size={16} className="mr-2" />
-              Xóa đã chọn
-            </Button>
-          )}
+          <Button
+            onClick={handleDeleteSelected}
+            disabled={!enableRowSelection || !hasSelectedRows}
+            className={`flex items-center justify-center rounded-lg px-2 py-2 text-sm font-medium text-white ${
+              enableRowSelection && hasSelectedRows
+                ? 'bg-red-500 transition-colors hover:bg-red-500 focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:outline-none'
+                : 'bg-red-300'
+            }`}
+          >
+            <Trash size={16} className="mr-2" />
+            Delete Selected
+          </Button>
         </div>
+
+        {/* Pagination */}
+        {enablePagination && totalPages > 1 && (
+          <div className="flex justify-center">
+            <nav className="inline-flex rounded-md shadow">
+              <button
+                onClick={() =>
+                  handlePageChange(Math.max(1, tableState.currentPage - 1))
+                }
+                disabled={tableState.currentPage === 1}
+                className={`rounded-l-md px-3 py-1 ${
+                  tableState.currentPage === 1
+                    ? 'cursor-not-allowed bg-gray-100 text-gray-400'
+                    : 'bg-white text-gray-700 hover:bg-green-50'
+                } border`}
+              >
+                <ChevronLeft size={16} />
+              </button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1)
+                .filter(
+                  page =>
+                    page === 1 ||
+                    page === totalPages ||
+                    Math.abs(page - tableState.currentPage) <= 1
+                )
+                .map((page, i, arr) => {
+                  const prevPage = arr[i - 1];
+                  const showEllipsisBefore = prevPage && prevPage !== page - 1;
+
+                  return (
+                    <React.Fragment key={page}>
+                      {showEllipsisBefore && (
+                        <span className="border bg-white px-3 py-1 text-gray-700">
+                          ...
+                        </span>
+                      )}
+                      <button
+                        onClick={() => handlePageChange(page)}
+                        className={`border px-3 py-1 ${
+                          tableState.currentPage === page
+                            ? 'bg-green-500 text-white'
+                            : 'bg-white text-gray-700 hover:bg-green-50'
+                        }`}
+                      >
+                        {page}
+                      </button>
+                    </React.Fragment>
+                  );
+                })}
+
+              <button
+                onClick={() =>
+                  handlePageChange(
+                    Math.min(totalPages, tableState.currentPage + 1)
+                  )
+                }
+                disabled={tableState.currentPage === totalPages}
+                className={`rounded-r-md px-3 py-1 ${
+                  tableState.currentPage === totalPages
+                    ? 'cursor-not-allowed bg-green-100 text-gray-400'
+                    : 'bg-white text-gray-700 hover:bg-green-50'
+                } border`}
+              >
+                <ChevronRight size={16} />
+              </button>
+            </nav>
+          </div>
+        )}
 
         {/* Search Bar */}
         <div className="flex">
@@ -205,8 +277,8 @@ const Table = <T extends Record<string, any>>({
           </div>
         </div>
       </div>
-      <table className="min-w-full divide-y divide-green-200 overflow-hidden rounded-lg border border-green-200">
-        <thead className="bg-green-700">
+      <table className="min-w-full overflow-hidden rounded-lg border border-green-200">
+        <thead className="bg-green-600">
           <tr>
             {enableRowSelection && (
               <th className="p-3 text-left">
@@ -219,7 +291,7 @@ const Table = <T extends Record<string, any>>({
                       (_, index) => tableState.selectedRows[`row-${index}`]
                     )
                   }
-                  className="rounded"
+                  className="h-4 w-4 rounded"
                 />
               </th>
             )}
@@ -253,7 +325,7 @@ const Table = <T extends Record<string, any>>({
           </tr>
         </thead>
 
-        <tbody className="divide-y divide-gray-200 bg-white">
+        <tbody className="divide-y divide-green-200 bg-white">
           {displayData.length === 0 ? (
             <tr>
               <td
@@ -276,7 +348,7 @@ const Table = <T extends Record<string, any>>({
               return (
                 <tr
                   key={rowId}
-                  className={`${isSelected ? 'bg-blue-50' : ''} hover:bg-gray-50`}
+                  className={`${isSelected ? 'bg-green-100' : ''} hover:bg-gray-50`}
                 >
                   {enableRowSelection && (
                     <td className="p-3">
@@ -284,13 +356,13 @@ const Table = <T extends Record<string, any>>({
                         type="checkbox"
                         checked={isSelected}
                         onChange={e => handleRowSelect(rowId, e.target.checked)}
-                        className="rounded"
+                        className="h-4 w-4 rounded"
                       />
                     </td>
                   )}
 
                   {columns.map(col => (
-                    <td key={col.key as string} className="p-3">
+                    <td key={col.key as string} className="p-1">
                       {col.render
                         ? col.render(item)
                         : (item[col.key] as React.ReactNode)}
@@ -298,19 +370,26 @@ const Table = <T extends Record<string, any>>({
                   ))}
 
                   {actionColumn && (
-                    <td className="space-x-2 p-3">
-                      {actionColumn.actions.map(action => (
-                        <button
-                          type="button"
-                          key={action.label}
-                          onClick={() => action.onClick(item)}
-                          className={`rounded-md px-2 py-2 ${
-                            action.className || ''
-                          }`}
-                        >
-                          {action.label}
-                        </button>
-                      ))}
+                    <td className="h-full p-1">
+                      <div className="flex h-full items-center justify-around">
+                        {actionColumn.actions.map(action => (
+                          <button
+                            type="button"
+                            key={action.id}
+                            onClick={() => action.onClick(item)}
+                            className={`flex items-center rounded-md px-1 py-1 ${
+                              action.className || ''
+                            }`}
+                          >
+                            {action.label && <span>{action.label}</span>}
+                            {action.icon && (
+                              <span className={action.label ? 'ml-1' : ''}>
+                                {action.icon}
+                              </span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
                     </td>
                   )}
 
@@ -348,73 +427,6 @@ const Table = <T extends Record<string, any>>({
           )}
         </tbody>
       </table>
-      {enablePagination && totalPages > 1 && (
-        <div className="my-4 flex justify-center">
-          <nav className="inline-flex rounded-md shadow">
-            <button
-              onClick={() =>
-                handlePageChange(Math.max(1, tableState.currentPage - 1))
-              }
-              disabled={tableState.currentPage === 1}
-              className={`rounded-l-md px-3 py-1 ${
-                tableState.currentPage === 1
-                  ? 'cursor-not-allowed bg-gray-100 text-gray-400'
-                  : 'bg-white text-gray-700 hover:bg-green-50'
-              } border`}
-            >
-              <ChevronLeft size={16} />
-            </button>
-
-            {Array.from({ length: totalPages }, (_, i) => i + 1)
-              .filter(
-                page =>
-                  page === 1 ||
-                  page === totalPages ||
-                  Math.abs(page - tableState.currentPage) <= 1
-              )
-              .map((page, i, arr) => {
-                const prevPage = arr[i - 1];
-                const showEllipsisBefore = prevPage && prevPage !== page - 1;
-
-                return (
-                  <React.Fragment key={page}>
-                    {showEllipsisBefore && (
-                      <span className="border bg-white px-3 py-1 text-gray-700">
-                        ...
-                      </span>
-                    )}
-                    <button
-                      onClick={() => handlePageChange(page)}
-                      className={`border px-3 py-1 ${
-                        tableState.currentPage === page
-                          ? 'bg-green-500 text-white'
-                          : 'bg-white text-gray-700 hover:bg-green-50'
-                      }`}
-                    >
-                      {page}
-                    </button>
-                  </React.Fragment>
-                );
-              })}
-
-            <button
-              onClick={() =>
-                handlePageChange(
-                  Math.min(totalPages, tableState.currentPage + 1)
-                )
-              }
-              disabled={tableState.currentPage === totalPages}
-              className={`rounded-r-md px-3 py-1 ${
-                tableState.currentPage === totalPages
-                  ? 'cursor-not-allowed bg-green-100 text-gray-400'
-                  : 'bg-white text-gray-700 hover:bg-green-50'
-              } border`}
-            >
-              <ChevronRight size={16} />
-            </button>
-          </nav>
-        </div>
-      )}{' '}
     </div>
   );
 };
