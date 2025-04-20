@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Table } from '../../../components';
-import type { ActionColumn } from '../../../components';
+// import type { ActionColumn } from '../../../components';
 
 // Định nghĩa kiểu dữ liệu mà mình thể hiện trên table/ api trả về
 interface PlantTable {
@@ -87,15 +87,16 @@ const initialPlantData: PlantTable[] = [
 
 const TopPlantedPlants: React.FC = () => {
   const [plantData, setPlantData] = useState<PlantTable[]>(initialPlantData);
-  const handleEdit = (id: number) => {
-    alert(`Sửa cây có ID: ${id}`);
-  };
+  // const handleEdit = (id: number) => {
+  //   alert(`Sửa cây có ID: ${id}`);
+  // };
+  setPlantData(initialPlantData);
 
-  const handleDelete = (id: number) => {
-    if (window.confirm('Bạn có chắc muốn xóa không?')) {
-      setPlantData(prev => prev.filter(plant => plant.id !== id));
-    }
-  };
+  // const handleDelete = (id: number) => {
+  //   if (window.confirm('Bạn có chắc muốn xóa không?')) {
+  //     setPlantData(prev => prev.filter(plant => plant.id !== id));
+  //   }
+  // };
 
   const plantColumns: PlantColumn[] = [
     {
@@ -132,21 +133,21 @@ const TopPlantedPlants: React.FC = () => {
       }
     }
   ];
-  const actionColumn: ActionColumn<PlantTable> = {
-    title: 'Hành động',
-    actions: [
-      {
-        label: 'Sửa',
-        onClick: plant => handleEdit(plant.id),
-        className: 'bg-blue-400 hover:bg-blue-600'
-      },
-      {
-        label: 'Xóa',
-        onClick: plant => handleDelete(plant.id),
-        className: 'bg-red-400 hover:bg-red-700'
-      }
-    ]
-  };
+  // const actionColumn: ActionColumn<PlantTable> = {
+  //   title: 'Hành động',
+  //   actions: [
+  //     {
+  //       label: 'Sửa',
+  //       onClick: plant => handleEdit(plant.id),
+  //       className: 'bg-blue-400 hover:bg-blue-600'
+  //     },
+  //     {
+  //       label: 'Xóa',
+  //       onClick: plant => handleDelete(plant.id),
+  //       className: 'bg-red-400 hover:bg-red-700'
+  //     }
+  //   ]
+  // };
   return (
     <>
       <h2 className="text-2xl font-semibold text-gray-800">
@@ -155,7 +156,7 @@ const TopPlantedPlants: React.FC = () => {
       <Table
         data={plantData}
         columns={plantColumns}
-        actionColumn={actionColumn}
+        // actionColumn={actionColumn}
       />
     </>
   );
