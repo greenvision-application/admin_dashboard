@@ -3,11 +3,13 @@ import { useEffect, useState } from 'react';
 type FetchOptions<T> = {
   fetchFn: () => Promise<T>;
   enabled?: boolean;
+  dependencies?: number | string | boolean;
 };
 
 export const useFetchData = <T>({
   fetchFn,
-  enabled = true
+  enabled = true,
+  dependencies
 }: FetchOptions<T>) => {
   const [data, setData] = useState<T | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -29,7 +31,7 @@ export const useFetchData = <T>({
     };
 
     fetchData();
-  }, [fetchFn, enabled]);
+  }, [fetchFn, enabled, dependencies]);
 
   return { data, isLoading, error };
 };

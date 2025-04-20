@@ -1,8 +1,4 @@
-import { useParams } from 'react-router-dom';
-import { useFetchData } from '../../../hooks';
-import { Plant } from '../../../types';
-import { getPlantDetail } from '../../../services';
-import { Loading } from '../../../components';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useCallback, useState } from 'react';
 import {
   Info,
@@ -22,10 +18,15 @@ import {
   Pencil,
   Trash2
 } from 'lucide-react';
+import { useFetchData } from '../../../hooks';
+import { Plant } from '../../../types';
+import { deletePlant, getPlantDetail } from '../../../services';
+import { Loading } from '../../../components';
 import constants from '../../../constants';
 
 const PlantDetail = () => {
   const { plantId } = useParams();
+  const navigate = useNavigate();
   const callGetDetail = useCallback(async () => {
     return await getPlantDetail(plantId!);
   }, [plantId]);
@@ -54,12 +55,16 @@ const PlantDetail = () => {
 
   const handleDelete = async () => {
     if (window.confirm('Are you sure you want to delete this plant?')) {
-      try {
-        console.log('Deleting plant with ID:', plantId);
-      } catch (error) {
-        console.error('Error deleting plant:', error);
-        alert('Failed to delete plant. Please try again.');
-      }
+      deletePlant(
+        data.id,
+        () => {
+          alert('Plant deleted successfully');
+          navigate('/plants');
+        },
+        () => {
+          alert('Failed to delete plant');
+        }
+      );
     }
   };
 

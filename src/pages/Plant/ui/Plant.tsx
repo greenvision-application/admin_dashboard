@@ -1,13 +1,16 @@
 import { FilePenLine, Trash } from 'lucide-react';
-import { getAllPlant } from '../../../services';
+import { getAllPlant, deletePlant } from '../../../services';
 import { useFetchData } from '../../../hooks';
 import type { Plant } from '../../../types';
 import { Action, Column, Loading, Table } from '../../../components';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
 const Plants = () => {
+  const [refresh, setRefresh] = useState(0);
   const { data, isLoading, error } = useFetchData<Plant[]>({
-    fetchFn: getAllPlant
+    fetchFn: getAllPlant,
+    dependencies: refresh
   });
   const navigate = useNavigate();
 
@@ -53,8 +56,17 @@ const Plants = () => {
     {
       id: Math.random(),
       icon: <Trash size={25} />,
-      onClick: plant => {
-        console.log('Edit plant:', plant);
+      onClick: async plant => {
+        await deletePlant(
+          plant.id,
+          () => {
+            alert('Plant deleted successfully');
+            setRefresh(prev => prev + 1);
+          },
+          () => {
+            alert('Failed to delete plant');
+          }
+        );
       },
       className: 'bg-red-400 text-white hover:bg-red-500'
     }

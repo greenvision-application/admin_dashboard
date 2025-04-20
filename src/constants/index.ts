@@ -10,7 +10,8 @@ const methods = {
 
 const urls = {
   plants: '/plants',
-  plantDetail: (id: string) => `/plants/${id}`
+  plantDetail: (id: string) => `/plants/${id}`,
+  deletePlant: (id: string) => `/plants/${id}`
 };
 
 enum PlantDifficulty {

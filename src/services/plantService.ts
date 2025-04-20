@@ -26,3 +26,16 @@ export const getPlantDetail = async (
     onError
   });
 };
+
+export const deletePlant = async (
+  id: string,
+  onSuccess?: (data: Plant) => void,
+  onError?: (error: unknown) => void
+) => {
+  return request({
+    method: constants.methods.delete,
+    url: constants.urls.deletePlant(id),
+    onSuccess,
+    onError
+  });
+};
