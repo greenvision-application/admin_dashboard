@@ -7,7 +7,8 @@ import {
   User,
   Scan,
   Setting,
-  PlantDetail
+  PlantDetail,
+  SwaggerPage
 } from '../pages';
 
 function App() {
@@ -21,6 +22,7 @@ function App() {
           <Route path="/plant/:plantId" element={<PlantDetail />} />
           <Route path="/scan" element={<Scan />} />
           <Route path="/settings" element={<Setting />} />
+          <Route path="/swagger" element={<SwaggerPage />} />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>

@@ -5,7 +5,8 @@ import {
   Users,
   ScanLine,
   LogOut,
-  Settings
+  Settings,
+  FileJson2
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Logo from './Logo';
@@ -23,7 +24,8 @@ const Sidebar = () => {
     { id: 'plants', icon: Sprout, label: 'Plants' },
     { id: 'users', icon: Users, label: 'Users' },
     { id: 'scan', icon: ScanLine, label: 'Scan Plant' },
-    { id: 'settings', icon: Settings, label: 'Settings' }
+    { id: 'settings', icon: Settings, label: 'Settings' },
+    { id: 'swagger', icon: FileJson2, label: 'Swagger' }
   ];
 
   return (
