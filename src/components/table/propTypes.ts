@@ -42,4 +42,5 @@ export interface TableProps<T extends Record<string, unknown>> {
   pageSize?: number;
   onDeleteSelected?: (indices: number[]) => void;
   onMoveRow?: (index: number, direction: 'up' | 'down') => void;
+  onRowClick?: (item: T) => void;
 }

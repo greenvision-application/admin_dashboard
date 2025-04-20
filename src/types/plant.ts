@@ -12,6 +12,18 @@ export interface Category {
   Plant: Plant[];
 }
 
+export interface Phase {
+  id?: string;
+  created_at?: Date;
+  phase_name: string;
+  desc?: string;
+  duration?: number;
+  size?: number;
+  plant_id: string;
+  // Care_instruction?: Care_instruction;
+  Plant?: Plant;
+}
+
 export interface Plant {
   id: string;
   plant_name: string;
@@ -33,4 +45,5 @@ export interface Plant {
   lightRequirement: LevelType;
   approved_content: boolean;
   Category: Category | null;
+  Phase?: Phase[];
 }

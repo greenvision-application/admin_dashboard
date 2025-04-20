@@ -13,3 +13,16 @@ export const getAllPlant = async (
     onError
   });
 };
+
+export const getPlantDetail = async (
+  id: string,
+  onSuccess?: (data: Plant) => void,
+  onError?: (error: unknown) => void
+) => {
+  return request<Plant>({
+    method: constants.methods.get,
+    url: constants.urls.plantDetail(id),
+    onSuccess,
+    onError
+  });
+};

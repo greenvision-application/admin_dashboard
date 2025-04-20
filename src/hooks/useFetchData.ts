@@ -1,10 +1,7 @@
 import { useEffect, useState } from 'react';
 
 type FetchOptions<T> = {
-  fetchFn: (
-    onSuccess?: (data: T) => void,
-    onError?: (error: unknown) => void
-  ) => Promise<T>;
+  fetchFn: () => Promise<T>;
   enabled?: boolean;
 };
 
@@ -17,21 +14,13 @@ export const useFetchData = <T>({
   const [error, setError] = useState<unknown>(null);
 
   useEffect(() => {
-    if (!enabled) {
-      return;
-    }
+    if (!enabled) return;
 
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        await fetchFn(
-          (data: T) => {
-            setData(data);
-          },
-          (error: unknown) => {
-            setError(error);
-          }
-        );
+        const result = await fetchFn();
+        setData(result);
       } catch (err) {
         setError(err);
       } finally {

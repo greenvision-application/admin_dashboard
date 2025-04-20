@@ -10,7 +10,8 @@ import {
   ArrowDownAZ,
   ArrowUpZA,
   ChevronsDown,
-  ChevronsUp
+  ChevronsUp,
+  Inbox
 } from 'lucide-react';
 import {
   TableProps,
@@ -30,7 +31,8 @@ const Table = <T extends Record<string, any>>({
   enablePagination = true,
   pageSize = 10,
   onDeleteSelected,
-  onMoveRow
+  onMoveRow,
+  onRowClick
 }: TableProps<T>): JSX.Element => {
   const [tableState, setTableState] = useState<TableState<T>>({
     sortColumn: null,
@@ -40,6 +42,12 @@ const Table = <T extends Record<string, any>>({
     filterValue: '',
     pageSizeAll: true
   });
+
+  const handleRowClick = (item: T) => {
+    if (onRowClick) {
+      onRowClick(item);
+    }
+  };
 
   const toggleSort = (columnKey: keyof T) => {
     setTableState(prev => {
@@ -347,7 +355,10 @@ const Table = <T extends Record<string, any>>({
                 }
                 className="py-4 text-center text-gray-500"
               >
-                Không có dữ liệu
+                <div className="flex flex-col items-center justify-center">
+                  <Inbox size={40} />
+                  <span className="mt-2">No data found</span>
+                </div>
               </td>
             </tr>
           ) : (
@@ -358,10 +369,22 @@ const Table = <T extends Record<string, any>>({
               return (
                 <tr
                   key={rowId}
-                  className={`${isSelected ? 'bg-green-100' : ''} hover:bg-gray-50`}
+                  className={`${isSelected ? 'bg-green-100' : ''} hover:bg-gray-50 ${onRowClick ? 'cursor-pointer' : ''}`}
+                  onClick={e => {
+                    if (
+                      e.target instanceof HTMLElement &&
+                      (e.target.tagName === 'INPUT' ||
+                        e.target.closest('button') ||
+                        e.target.closest('td:last-child'))
+                    ) {
+                      return;
+                    }
+
+                    if (onRowClick) handleRowClick(item);
+                  }}
                 >
                   {enableRowSelection && (
-                    <td className="p-3">
+                    <td className="p-3" onClick={e => e.stopPropagation()}>
                       <input
                         type="checkbox"
                         checked={isSelected}
@@ -380,7 +403,10 @@ const Table = <T extends Record<string, any>>({
                   ))}
 
                   {actionColumn && (
-                    <td className="h-full p-1">
+                    <td
+                      className="h-full p-1"
+                      onClick={e => e.stopPropagation()}
+                    >
                       <div className="flex h-full items-center justify-around">
                         {actionColumn.actions.map(action => (
                           <button
@@ -404,7 +430,7 @@ const Table = <T extends Record<string, any>>({
                   )}
 
                   {onMoveRow && (
-                    <td className="p-3">
+                    <td className="p-3" onClick={e => e.stopPropagation()}>
                       <div className="flex space-x-2">
                         <button
                           disabled={index === 0}

@@ -1,3 +1,4 @@
 import Plant from './Plant';
+import PlantDetail from './PlantDetail';
 
-export { Plant };
+export { Plant, PlantDetail };

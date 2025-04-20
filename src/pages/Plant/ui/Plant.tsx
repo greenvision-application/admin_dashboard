@@ -3,11 +3,13 @@ import { getAllPlant } from '../../../services';
 import { useFetchData } from '../../../hooks';
 import type { Plant } from '../../../types';
 import { Action, Column, Loading, Table } from '../../../components';
+import { useNavigate } from 'react-router-dom';
 
-const Plant = () => {
+const Plants = () => {
   const { data, isLoading, error } = useFetchData<Plant[]>({
     fetchFn: getAllPlant
   });
+  const navigate = useNavigate();
 
   if (isLoading) return <Loading label="Getting plants data..." />;
   if (error) return <div>Error: {error.toString()}</div>;
@@ -86,6 +88,11 @@ const Plant = () => {
       render: (item: Plant) => renderList(item.meaning)
     }
   ];
+
+  const handleRowClick = (item: Plant) => {
+    navigate(`/plant/${item.id}`);
+  };
+
   return (
     <Table
       data={data}
@@ -98,7 +105,9 @@ const Plant = () => {
       enableSorting={true}
       enablePagination={true}
       pageSize={6}
+      onRowClick={handleRowClick}
     />
   );
 };
-export default Plant;
+
+export default Plants;
