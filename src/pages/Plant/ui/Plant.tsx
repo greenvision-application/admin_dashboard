@@ -23,6 +23,22 @@ const Plant = () => {
     );
   };
 
+  const renderApproved = (item: Plant) => {
+    return (
+      <>
+        {item.approved_content ? (
+          <span className="rounded-full bg-green-100 px-3 py-1 text-sm text-green-700">
+            Approved
+          </span>
+        ) : (
+          <span className="rounded-full bg-yellow-100 px-3 py-1 text-sm text-yellow-700">
+            Pending
+          </span>
+        )}
+      </>
+    );
+  };
+
   const actions: Action<Plant>[] = [
     {
       id: Math.random(),
@@ -44,6 +60,11 @@ const Plant = () => {
 
   const columns: Column<Plant>[] = [
     { key: 'plant_name', title: 'Name' },
+    {
+      key: 'approved_content',
+      title: 'Approved',
+      render: (item: Plant) => renderApproved(item)
+    },
     {
       key: 'overview',
       title: 'Overview',
@@ -76,7 +97,7 @@ const Plant = () => {
       enableRowSelection={true}
       enableSorting={true}
       enablePagination={true}
-      pageSize={5}
+      pageSize={6}
     />
   );
 };

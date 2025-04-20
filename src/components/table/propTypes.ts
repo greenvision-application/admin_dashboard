@@ -10,6 +10,7 @@ export interface TableState<T> {
   selectedRows: SelectedRows;
   currentPage: number;
   filterValue: string;
+  pageSizeAll?: boolean;
 }
 
 export interface Column<T> {

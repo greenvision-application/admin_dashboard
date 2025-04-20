@@ -8,7 +8,9 @@ import {
   ChevronLeft,
   ChevronRight,
   ArrowDownAZ,
-  ArrowUpZA
+  ArrowUpZA,
+  ChevronsDown,
+  ChevronsUp
 } from 'lucide-react';
 import {
   TableProps,
@@ -35,7 +37,8 @@ const Table = <T extends Record<string, any>>({
     sortDirection: null,
     selectedRows: {},
     currentPage: 1,
-    filterValue: ''
+    filterValue: '',
+    pageSizeAll: true
   });
 
   const toggleSort = (columnKey: keyof T) => {
@@ -148,7 +151,7 @@ const Table = <T extends Record<string, any>>({
     }
 
     // Return all data if pagination is disabled
-    if (!enablePagination) return processedData;
+    if (!enablePagination || !tableState.pageSizeAll) return processedData;
 
     // Apply pagination
     const startIndex = (tableState.currentPage - 1) * pageSize;
@@ -156,7 +159,7 @@ const Table = <T extends Record<string, any>>({
   }, [data, columns, tableState, pageSize, enablePagination]);
 
   const totalPages = useMemo(() => {
-    if (!enablePagination) return 1;
+    if (!enablePagination || !tableState.pageSizeAll) return 1;
 
     let filteredData = [...data];
     if (tableState.filterValue) {
@@ -171,12 +174,19 @@ const Table = <T extends Record<string, any>>({
     }
 
     return Math.ceil(filteredData.length / pageSize);
-  }, [data, enablePagination, pageSize, tableState.filterValue, columns]);
+  }, [
+    data,
+    enablePagination,
+    pageSize,
+    tableState.filterValue,
+    columns,
+    tableState.pageSizeAll
+  ]);
 
   const hasSelectedRows = Object.values(tableState.selectedRows).some(Boolean);
 
   return (
-    <div className="overflow-x-auto">
+    <div className="mb-3 overflow-x-auto">
       <div className="m-3 flex items-center justify-between">
         {/* Delete Selected Button */}
         <div className="flex items-center">
@@ -269,7 +279,7 @@ const Table = <T extends Record<string, any>>({
             <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
             <input
               type="text"
-              placeholder="Tìm kiếm..."
+              placeholder="Search something..."
               value={tableState.filterValue}
               onChange={handleFilterChange}
               className="w-full rounded-lg border border-gray-200 bg-white py-2 pr-4 pl-10 text-sm placeholder-gray-400 shadow-sm transition-colors focus:border-green-300 focus:ring-0 focus:ring-green-300 focus:outline-none"
@@ -426,6 +436,39 @@ const Table = <T extends Record<string, any>>({
             })
           )}
         </tbody>
+
+        <tfoot>
+          <tr>
+            <td colSpan={8} className="bg-green-600">
+              <div className="flex justify-center">
+                <Button
+                  variant="icon"
+                  className="h-11"
+                  onClick={() => {
+                    setTableState(prev => {
+                      return {
+                        ...prev,
+                        pageSizeAll: !prev.pageSizeAll
+                      };
+                    });
+                  }}
+                >
+                  {tableState.pageSizeAll ? (
+                    <ChevronsDown
+                      size={25}
+                      className="transform animate-bounce text-gray-200 transition-transform duration-100 hover:scale-105 hover:text-green-300"
+                    />
+                  ) : (
+                    <ChevronsUp
+                      size={25}
+                      className="transform animate-bounce text-gray-200 transition-transform duration-100 hover:scale-105 hover:text-green-300"
+                    />
+                  )}
+                </Button>
+              </div>
+            </td>
+          </tr>
+        </tfoot>
       </table>
     </div>
   );
