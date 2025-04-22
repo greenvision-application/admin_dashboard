@@ -46,4 +46,5 @@ export interface Plant {
   approved_content: boolean;
   Category: Category | null;
   Phase?: Phase[];
+  searchQuery?: string;
 }

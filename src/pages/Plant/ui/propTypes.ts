@@ -4,7 +4,7 @@ import {
   PlantCategoryType,
   SoilType
 } from '../../../constants';
-import { Phase } from '../../../types/plant';
+import { Phase, Plant } from '../../../types/plant';
 
 export interface ImageGalleryProps {
   images?: string[];
@@ -55,4 +55,15 @@ export interface MeaningProps {
 
 export interface GrowthPhasesProps {
   phases: Phase[];
+}
+
+export interface PlantUpdateFormProps {
+  plantData: Plant;
+  onSubmit: (data: Plant) => void;
+}
+
+export interface PlantUpdateContainerProps {
+  plantData: Plant;
+  onSubmit: (data: Plant) => Promise<void>;
+  onCancel: () => void;
 }

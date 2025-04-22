@@ -8,6 +8,9 @@ const methods = {
   patch: 'PATCH'
 };
 
+const placeholderImage =
+  'https://peicannabiscorp.com/wp-content/uploads/2022/08/woocommerce-placeholder-1200x1200-1-510x510.jpg';
+
 const urls = {
   plants: '/plants',
   plantDetail: (id: string) => `/plants/${id}`,
@@ -203,5 +206,6 @@ export default {
   getPlantCategory,
   getTaskStatus,
   getGender,
-  getPercent
+  getPercent,
+  placeholderImage
 };

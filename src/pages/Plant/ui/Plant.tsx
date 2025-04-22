@@ -1,10 +1,10 @@
 import { FilePenLine, Trash } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 import { getAllPlant, deletePlant } from '../../../services';
 import { useFetchData } from '../../../hooks';
 import type { Plant } from '../../../types';
 import { Action, Column, Loading, Table } from '../../../components';
-import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
 
 const Plants = () => {
   const [refresh, setRefresh] = useState(0);
@@ -49,7 +49,7 @@ const Plants = () => {
       id: Math.random(),
       icon: <FilePenLine size={25} />,
       onClick: plant => {
-        console.log('Edit plant:', plant);
+        navigate(`/plant/${plant.id}/update`);
       },
       className: 'bg-blue-400 text-white hover:bg-blue-500'
     },

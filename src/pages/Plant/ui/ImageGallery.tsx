@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { ImageGalleryProps } from './propTypes';
+import constants from '../../../constants';
 
 const ImageGallery = ({ images = [], plantName }: ImageGalleryProps) => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -17,7 +18,7 @@ const ImageGallery = ({ images = [], plantName }: ImageGalleryProps) => {
     return (
       <div className="relative mb-2 aspect-square overflow-hidden rounded-lg bg-gray-50">
         <img
-          src="https://peicannabiscorp.com/wp-content/uploads/2022/08/woocommerce-placeholder-1200x1200-1-510x510.jpg"
+          src={constants.placeholderImage}
           alt="Placeholder"
           className="h-full w-full object-cover"
         />
@@ -25,8 +26,7 @@ const ImageGallery = ({ images = [], plantName }: ImageGalleryProps) => {
     );
   }
 
-  const placeholderUrl =
-    'https://peicannabiscorp.com/wp-content/uploads/2022/08/woocommerce-placeholder-1200x1200-1-510x510.jpg';
+  const placeholderUrl = constants.placeholderImage;
 
   return (
     <>
