@@ -29,7 +29,7 @@ const PlantDetail = () => {
   if (!data) return null;
 
   const handleEdit = () => {
-    console.log('Edit button clicked');
+    navigate(`/plant/${plantId}/update`);
   };
 
   const handleDelete = async () => {
@@ -57,6 +57,7 @@ const PlantDetail = () => {
             plantName={data.plant_name}
             scientificName={data.scientific_name}
             difficultyLevel={data.difficulty_level}
+            plantType={data.Category?.category_name}
           />
           {data.characteristic && data.characteristic.length > 0 && (
             <Characteristics characteristics={data.characteristic} />

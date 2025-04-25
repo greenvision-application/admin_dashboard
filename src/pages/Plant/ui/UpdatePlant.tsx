@@ -1,12 +1,14 @@
 import { useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { getPlantDetail } from '../../../services';
+import { getPlantDetail, updatePlant } from '../../../services';
 import { useFetchData } from '../../../hooks';
 import { Loading } from '../../../components';
 import PlantUpdateContainer from './PlantUpdateContainer';
+import type { UpdatePlant } from '../../../types/plant';
 
 const UpdatePlant = () => {
   const { plantId } = useParams();
+  // const navigate = useNavigate();
   const callGetDetail = useCallback(async () => {
     return await getPlantDetail(plantId!);
   }, [plantId]);
@@ -18,10 +20,16 @@ const UpdatePlant = () => {
   if (error) return <div>Error: {error.toString()}</div>;
   if (!data) return null;
 
-  const handleSubmit = async (data: unknown) => {
-    console.log('Submitted data:', data);
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    alert('Cập nhật thành công!');
+  const handleSubmit = async (data: UpdatePlant) => {
+    await updatePlant(
+      data,
+      () => {
+        alert('Plant updated successfully');
+      },
+      () => {
+        alert('Failed to update plant');
+      }
+    );
   };
 
   return (

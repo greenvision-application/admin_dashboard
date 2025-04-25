@@ -13,8 +13,10 @@ const placeholderImage =
 
 const urls = {
   plants: '/plants',
+  plantType: '/categories',
   plantDetail: (id: string) => `/plants/${id}`,
-  deletePlant: (id: string) => `/plants/${id}`
+  deletePlant: (id: string) => `/plants/${id}`,
+  updatePlant: (id: string) => `/plants/${id}`
 };
 
 enum PlantDifficulty {
@@ -84,8 +86,8 @@ enum PlantCategory {
   HYDROPONICS = 'HYDROPONICS',
   WALL_PLANTER = 'WALL_PLANTER'
 }
-type PlantCategoryType = keyof typeof PlantCategory;
-const getPlantCategory = (category: PlantCategoryType) => {
+type PlantLocation = keyof typeof PlantCategory;
+const getPlantCategory = (category: PlantLocation) => {
   switch (category) {
     case PlantCategory.INDOOR:
       return 'Indoor';
@@ -185,7 +187,7 @@ const getGender = (gender: GenderType) => {
 export type {
   DifficultyLevel,
   SoilType,
-  PlantCategoryType,
+  PlantLocation,
   LevelType,
   TaskStatusType,
   GenderType

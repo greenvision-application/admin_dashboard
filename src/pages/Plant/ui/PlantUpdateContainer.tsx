@@ -1,7 +1,7 @@
 import type React from 'react';
 import { useState } from 'react';
 import PlantUpdateForm from './PlantUpdateForm';
-import { Plant } from '../../../types';
+import { UpdatePlant } from '../../../types';
 import { PlantUpdateContainerProps } from './propTypes';
 
 const PlantUpdateContainer: React.FC<PlantUpdateContainerProps> = ({
@@ -12,7 +12,7 @@ const PlantUpdateContainer: React.FC<PlantUpdateContainerProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (data: Plant) => {
+  const handleSubmit = async (data: UpdatePlant) => {
     try {
       setIsSubmitting(true);
       setError(null);
@@ -21,7 +21,7 @@ const PlantUpdateContainer: React.FC<PlantUpdateContainerProps> = ({
       setError(
         err instanceof Error
           ? err.message
-          : 'Có lỗi xảy ra khi cập nhật thông tin cây trồng'
+          : 'An error occurred while updating the plant'
       );
       console.error(err);
     } finally {
@@ -43,7 +43,7 @@ const PlantUpdateContainer: React.FC<PlantUpdateContainerProps> = ({
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
           <div className="rounded-lg bg-white p-4 shadow-lg">
             <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-green-500"></div>
-            <p className="mt-2 text-sm text-gray-600">Đang cập nhật...</p>
+            <p className="mt-2 text-sm text-gray-600">Updating plant...</p>
           </div>
         </div>
       )}

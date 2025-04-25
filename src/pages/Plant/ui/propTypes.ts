@@ -1,10 +1,10 @@
 import {
   DifficultyLevel,
   LevelType,
-  PlantCategoryType,
+  PlantLocation,
   SoilType
 } from '../../../constants';
-import { Phase, Plant } from '../../../types/plant';
+import { Phase, UpdatePlant } from '../../../types';
 
 export interface ImageGalleryProps {
   images?: string[];
@@ -15,6 +15,7 @@ export interface BasicInformationProps {
   plantName: string;
   scientificName: string;
   difficultyLevel: DifficultyLevel;
+  plantType?: string;
 }
 
 export interface CharacteristicsProps {
@@ -34,7 +35,7 @@ export interface OverviewProps {
 
 export interface GrowingConditionsProps {
   soilType: SoilType;
-  habitatLocation: PlantCategoryType;
+  habitatLocation: PlantLocation;
   minMatureSize: number;
   maxMatureSize: number;
 }
@@ -58,12 +59,12 @@ export interface GrowthPhasesProps {
 }
 
 export interface PlantUpdateFormProps {
-  plantData: Plant;
-  onSubmit: (data: Plant) => void;
+  plantData: UpdatePlant;
+  onSubmit: (data: UpdatePlant) => void;
 }
 
 export interface PlantUpdateContainerProps {
-  plantData: Plant;
-  onSubmit: (data: Plant) => Promise<void>;
+  plantData: UpdatePlant;
+  onSubmit: (data: UpdatePlant) => Promise<void>;
   onCancel: () => void;
 }

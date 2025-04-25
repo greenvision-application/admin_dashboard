@@ -5,7 +5,8 @@ import { BasicInformationProps } from './propTypes';
 const BasicInformation = ({
   plantName,
   scientificName,
-  difficultyLevel
+  difficultyLevel,
+  plantType
 }: BasicInformationProps) => {
   return (
     <div className="mt-4 rounded-lg bg-gray-100 p-4">
@@ -21,6 +22,12 @@ const BasicInformation = ({
         <div>
           <p className="text-sm text-gray-500">Scientific name</p>
           <p className="font-medium italic">{scientificName}</p>
+        </div>
+        <div>
+          <p className="text-sm text-gray-500">Plant type</p>
+          <p className="font-medium italic">
+            {plantType ? plantType : 'Not yet update'}
+          </p>
         </div>
         <div>
           <p className="text-sm text-gray-500">Difficulty level</p>

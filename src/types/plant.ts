@@ -1,7 +1,7 @@
 import {
   DifficultyLevel,
   SoilType,
-  PlantCategoryType,
+  PlantLocation,
   LevelType
 } from '../constants';
 
@@ -36,7 +36,7 @@ export interface Plant {
   difficulty_level: DifficultyLevel;
   soil_type: SoilType;
   category_id: string | null;
-  habitatLocation: PlantCategoryType;
+  habitatLocation: PlantLocation;
   minTemperature: number;
   maxTemperature: number;
   minMatureSize: number;
@@ -47,4 +47,8 @@ export interface Plant {
   Category: Category | null;
   Phase?: Phase[];
   searchQuery?: string;
+}
+
+export interface UpdatePlant extends Partial<Omit<Plant, 'id'>> {
+  id: string;
 }
