@@ -9,7 +9,7 @@ import {
   Setting,
   PlantDetail,
   SwaggerPage,
-  UpdatePlant
+  UpdatePlantUI
 } from '../pages';
 
 function App() {
@@ -21,7 +21,7 @@ function App() {
           <Route path="/users" element={<User />} />
           <Route path="/plants" element={<Plant />} />
           <Route path="/plant/:plantId" element={<PlantDetail />} />
-          <Route path="/plant/:plantId/update" element={<UpdatePlant />} />
+          <Route path="/plant/:plantId/update" element={<UpdatePlantUI />} />
           <Route path="/scan" element={<Scan />} />
           <Route path="/settings" element={<Setting />} />
           <Route path="/swagger" element={<SwaggerPage />} />
