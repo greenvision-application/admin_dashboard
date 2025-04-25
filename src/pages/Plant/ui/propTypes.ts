@@ -4,7 +4,7 @@ import {
   PlantLocation,
   SoilType
 } from '../../../constants';
-import { Phase, UpdatePlant } from '../../../types';
+import { Phase, UpdatePlant, Plant } from '../../../types';
 
 export interface ImageGalleryProps {
   images?: string[];
@@ -67,4 +67,25 @@ export interface PlantUpdateContainerProps {
   plantData: UpdatePlant;
   onSubmit: (data: UpdatePlant) => Promise<void>;
   onCancel: () => void;
+}
+
+export interface FormHandlers {
+  handleChange: (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
+    >
+  ) => void;
+  handleNumberChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleCheckboxChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  handleArrayItemChange: (
+    arrayName: keyof Plant,
+    index: number,
+    value: string
+  ) => void;
+  addArrayItem: (arrayName: keyof Plant) => void;
+  removeArrayItem: (arrayName: keyof Plant, index: number) => void;
+}
+
+export interface ErrorSummaryProps {
+  errors: Record<string, string>;
 }

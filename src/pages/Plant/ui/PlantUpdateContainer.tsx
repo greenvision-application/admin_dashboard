@@ -3,11 +3,11 @@ import { useState } from 'react';
 import PlantUpdateForm from './PlantUpdateForm';
 import { UpdatePlant } from '../../../types';
 import { PlantUpdateContainerProps } from './propTypes';
+import { Loading } from '../../../components';
 
 const PlantUpdateContainer: React.FC<PlantUpdateContainerProps> = ({
   plantData,
   onSubmit
-  //   onCancel
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -42,8 +42,9 @@ const PlantUpdateContainer: React.FC<PlantUpdateContainerProps> = ({
       {isSubmitting && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
           <div className="rounded-lg bg-white p-4 shadow-lg">
-            <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-green-500"></div>
-            <p className="mt-2 text-sm text-gray-600">Updating plant...</p>
+            {/* <div className="mx-auto h-8 w-8 animate-spin rounded-full border-b-2 border-green-500"></div>
+            <p className="mt-2 text-sm text-gray-600">Updating plant...</p> */}
+            <Loading label="Updating  plant..." size="md" />
           </div>
         </div>
       )}
