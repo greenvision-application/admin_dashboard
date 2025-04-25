@@ -6,7 +6,7 @@ import { Loading } from '../../../components';
 import PlantUpdateContainer from './PlantUpdateContainer';
 import type { UpdatePlant } from '../../../types/plant';
 
-const UpdatePlant = () => {
+const UpdatePlantUI = () => {
   const { plantId } = useParams();
   // const navigate = useNavigate();
   const callGetDetail = useCallback(async () => {
@@ -41,4 +41,4 @@ const UpdatePlant = () => {
   );
 };
 
-export default UpdatePlant;
+export default UpdatePlantUI;

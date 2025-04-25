@@ -1,5 +1,5 @@
 import Plant from './Plant';
 import PlantDetail from './PlantDetail';
-import UpdatePlant from './UpdatePlant';
+import UpdatePlantUI from './UpdatePlant';
 
-export { Plant, PlantDetail, UpdatePlant };
+export { Plant, PlantDetail, UpdatePlantUI };

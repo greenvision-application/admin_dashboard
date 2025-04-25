@@ -1,5 +1,5 @@
 import { Dashboard } from './Home';
-import { Plant, PlantDetail, UpdatePlant } from './Plant';
+import { Plant, PlantDetail, UpdatePlantUI } from './Plant';
 import { User } from './Client';
 import { Scan } from './Scan';
 import { Setting } from './Setting';
@@ -15,5 +15,5 @@ export {
   Setting,
   PlantDetail,
   SwaggerPage,
-  UpdatePlant
+  UpdatePlantUI
 };
