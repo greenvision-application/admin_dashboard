@@ -14,6 +14,8 @@ const placeholderImage =
 const urls = {
   plants: '/plants',
   plantType: '/categories',
+  urlScanPlant: '/plants/scan/url',
+  fileScanPlant: '/plants/scan',
   plantDetail: (id: string) => `/plants/${id}`,
   deletePlant: (id: string) => `/plants/${id}`,
   updatePlant: (id: string) => `/plants/${id}`

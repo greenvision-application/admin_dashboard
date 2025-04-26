@@ -10,7 +10,7 @@ import constants from '../constants';
 // 1. Tạo instance axios
 const AXIOS: AxiosInstance = axios.create({
   baseURL: constants.apiUrl,
-  timeout: 20000,
+  timeout: 30000,
   headers: {
     Accept: 'application/json',
     'Content-type': 'application/json;charset=utf-8'

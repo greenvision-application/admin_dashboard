@@ -25,8 +25,8 @@ export interface CharacteristicsProps {
 export interface HeaderWithActionsProps {
   plantName: string;
   scientificName: string;
-  onEdit: () => void;
-  onDelete: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
 export interface OverviewProps {

@@ -54,6 +54,39 @@ export const updatePlant = async (
   });
 };
 
+export const urlScanPlant = async (
+  url: string,
+  onSuccess?: (data: Plant) => void,
+  onError?: (error: unknown) => void
+) => {
+  return request<Plant>({
+    method: constants.methods.post,
+    url: constants.urls.urlScanPlant,
+    data: { imageUrl: url },
+    onSuccess,
+    onError
+  });
+};
+
+export const scanFilePlant = async (
+  fileData: FormData,
+  onSuccess?: (data: Plant) => void,
+  onError?: (error: unknown) => void
+) => {
+  const data = fileData;
+
+  return request({
+    method: constants.methods.post,
+    headers: {
+      'Content-Type': 'multipart/form-data'
+    },
+    url: constants.urls.fileScanPlant,
+    data,
+    onSuccess,
+    onError
+  });
+};
+
 export const getPlantType = async (
   onSuccess?: (data: Category[]) => void,
   onError?: (error: unknown) => void
