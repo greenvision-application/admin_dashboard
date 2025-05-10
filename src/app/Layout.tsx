@@ -1,16 +1,15 @@
-import React from 'react';
 import { Outlet } from 'react-router-dom';
 import { Header, Sidebar } from '../widgets';
 
 const Layout = () => {
   return (
-    <div className="flex min-h-screen">
+    <div className="relative">
       <Sidebar />
-      <main className="ml-24 flex-1">
+      <main className="ml-24 flex h-screen flex-col">
         <Header />
-        <section className="mt-20">
+        <div className="flex-1 overflow-y-auto">
           <Outlet />
-        </section>
+        </div>
         {/* <Footer /> */}
       </main>
     </div>

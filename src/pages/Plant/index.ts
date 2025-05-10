@@ -1,3 +1,1 @@
-import { Plant } from './ui';
-
-export { Plant };
+export * from './ui';

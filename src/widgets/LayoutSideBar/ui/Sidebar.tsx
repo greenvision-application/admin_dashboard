@@ -5,7 +5,8 @@ import {
   Users,
   ScanLine,
   LogOut,
-  Settings
+  Settings,
+  FileJson2
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Logo from './Logo';
@@ -23,11 +24,12 @@ const Sidebar = () => {
     { id: 'plants', icon: Sprout, label: 'Plants' },
     { id: 'users', icon: Users, label: 'Users' },
     { id: 'scan', icon: ScanLine, label: 'Scan Plant' },
-    { id: 'settings', icon: Settings, label: 'Settings' }
+    { id: 'settings', icon: Settings, label: 'Settings' },
+    { id: 'swagger', icon: FileJson2, label: 'Swagger' }
   ];
 
   return (
-    <div className="fixed flex h-screen w-24 flex-col items-center justify-between bg-black py-4">
+    <div className="fixed top-0 left-0 flex h-screen w-24 flex-col items-center justify-between bg-black py-4">
       <button
         onClick={() => {
           setActive('');
